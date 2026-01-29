@@ -4,8 +4,6 @@ API backend desenvolvida em **Java + Spring Boot** para criação e compartilham
 
 Este projeto foi desenvolvido com foco em **aprendizado prático**, arquitetura limpa e aplicação de conceitos utilizados no mercado, partindo de um **MVP bem definido** e evolutivo.
 
----
-
 ## Objetivo do Projeto
 
 Permitir que um serviço ou usuário:
@@ -20,8 +18,6 @@ Permitir que um serviço ou usuário:
 - Garanta que o arquivo:
   - expire automaticamente
   - seja invalidado após atingir o limite de acessos
-
----
 
 ## O que é o MVP neste projeto?
 
@@ -39,8 +35,6 @@ O **MVP (Minimum Viable Product)** representa a **menor versão funcional e comp
 - Persistência em banco **H2**
 - Tratamento padronizado de erros
 - Testes unitários básicos
-
----
 
 ## Arquitetura Geral
 
@@ -61,8 +55,6 @@ Princípios adotados:
 - Código orientado a domínio
 - Facilidade de evolução pós-MVP
 
----
-
 ## Tecnologias Utilizadas
 
 - Java 21+
@@ -74,8 +66,6 @@ Princípios adotados:
 - NanoID (geração de códigos curtos)
 - Lombok
 - Maven
-
----
 
 ## Estrutura de Pacotes (simplificada)
 
@@ -90,8 +80,6 @@ br.com.walyson.secure_link
  ├── exception
  └── config
 ```
-
----
 
 ## Fluxo Principal do MVP
 
@@ -130,8 +118,6 @@ curl -X POST http://localhost:8080/links/upload \
 }
 ```
 
----
-
 ### Acesso ao link seguro
 
 **Endpoint**
@@ -154,8 +140,6 @@ GET /l/{shortCode}
 curl -v http://localhost:8080/l/RTgJDgla
 ```
 
----
-
 ## Regras de Negócio Aplicadas
 
 - Código curto **único**
@@ -165,8 +149,6 @@ curl -v http://localhost:8080/l/RTgJDgla
 
 - Arquivo armazenado no filesystem
 - Persistência desacoplada da lógica de upload
-
----
 
 ## Padronização de Erros
 
@@ -190,8 +172,6 @@ O projeto utiliza `@ControllerAdvice` para:
 }
 ```
 
----
-
 ## Testes
 
 O MVP inclui testes unitários focados em:
@@ -205,8 +185,6 @@ Ferramentas:
 - JUnit 5
 - Mockito
 
----
-
 ## Configuração (application.properties)
 
 ```properties
@@ -217,8 +195,6 @@ spring.jpa.hibernate.ddl-auto=update
 app.base-url=http://localhost:8080
 app.storage.path=/tmp/uploads/
 ```
-
----
 
 ## Próximos Passos (Pós-MVP)
 
@@ -231,7 +207,5 @@ app.storage.path=/tmp/uploads/
 - Frontend em Angular
 - Dockerização
 - Observabilidade (logs, métricas)
-
----
 
 Author: Walyson Gomes
