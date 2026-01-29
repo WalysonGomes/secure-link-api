@@ -1,0 +1,237 @@
+# Secure Link API — MVP
+
+API backend desenvolvida em **Java + Spring Boot** para criação e compartilhamento de links seguros para arquivos, com controle de expiração e número máximo de acessos.
+
+Este projeto foi desenvolvido com foco em **aprendizado prático**, arquitetura limpa e aplicação de conceitos utilizados no mercado, partindo de um **MVP bem definido** e evolutivo.
+
+---
+
+## Objetivo do Projeto
+
+Permitir que um serviço ou usuário:
+
+- Faça upload de um arquivo
+- Gere um link curto e único
+- Defina:
+  - data de expiração
+  - número máximo de visualizações
+
+- Compartilhe esse link
+- Garanta que o arquivo:
+  - expire automaticamente
+  - seja invalidado após atingir o limite de acessos
+
+---
+
+## O que é o MVP neste projeto?
+
+O **MVP (Minimum Viable Product)** representa a **menor versão funcional e completa** do produto, capaz de entregar valor real e validar o fluxo principal da aplicação.
+
+### MVP deste projeto inclui:
+
+- Criação de links seguros
+- Upload de arquivos via multipart
+- Resolução do link (`/l/{code}`)
+- Controle de:
+  - expiração
+  - número máximo de acessos
+
+- Persistência em banco **H2**
+- Tratamento padronizado de erros
+- Testes unitários básicos
+
+---
+
+## Arquitetura Geral
+
+```
+Controller (HTTP)
+   ↓
+Service (Regras de negócio)
+   ↓
+Repository (JPA)
+   ↓
+H2 Database
+```
+
+Princípios adotados:
+
+- Separação clara de responsabilidades
+- Services pequenos e focados
+- Código orientado a domínio
+- Facilidade de evolução pós-MVP
+
+---
+
+## Tecnologias Utilizadas
+
+- Java 21+
+- Spring Boot
+- Spring Web
+- Spring Data JPA
+- H2 Database (MVP)
+- Multipart File Upload
+- NanoID (geração de códigos curtos)
+- Lombok
+- Maven
+
+---
+
+## Estrutura de Pacotes (simplificada)
+
+```
+br.com.walyson.secure_link
+ ├── controller
+ ├── service
+ ├── repository
+ ├── domain
+ ├── dto
+ ├── utils
+ ├── exception
+ └── config
+```
+
+---
+
+## Fluxo Principal do MVP
+
+### Upload do arquivo + criação do link
+
+**Endpoint**
+
+```http
+POST /links/upload
+Content-Type: multipart/form-data
+```
+
+**Parâmetros**
+
+- `file` (MultipartFile) — obrigatório
+- `expiresAt` (Instant) — opcional
+- `maxViews` (Integer) — opcional
+
+**Exemplo com curl**
+
+```bash
+curl -X POST http://localhost:8080/links/upload \
+  -F "file=@test.txt" \
+  -F "expiresAt=2026-02-01T23:59:59Z" \
+  -F "maxViews=3"
+```
+
+**Resposta**
+
+```json
+{
+  "shortCode": "RTgJDgla",
+  "accessUrl": "http://localhost:8080/l/RTgJDgla",
+  "expiresAt": "2026-02-01T23:59:59Z",
+  "maxViews": 3
+}
+```
+
+---
+
+### Acesso ao link seguro
+
+**Endpoint**
+
+```http
+GET /l/{shortCode}
+```
+
+**Comportamento**
+
+- Valida se o link existe
+- Verifica expiração
+- Verifica número máximo de acessos
+- Incrementa contador
+- Retorna o arquivo
+
+**Exemplo**
+
+```bash
+curl -v http://localhost:8080/l/RTgJDgla
+```
+
+---
+
+## Regras de Negócio Aplicadas
+
+- Código curto **único**
+- Link inválido se:
+  - expirado
+  - número máximo de acessos atingido
+
+- Arquivo armazenado no filesystem
+- Persistência desacoplada da lógica de upload
+
+---
+
+## Padronização de Erros
+
+O projeto utiliza `@ControllerAdvice` para:
+
+- Erros de validação
+- Link não encontrado
+- Link expirado
+- Limite de acessos atingido
+- Erros internos (IO, filesystem)
+
+**Formato padrão**
+
+```json
+{
+  "timestamp": "2026-01-29T16:21:38.073Z",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Link expired",
+  "path": "/l/RTgJDgla"
+}
+```
+
+---
+
+## Testes
+
+O MVP inclui testes unitários focados em:
+
+- Services
+- Regras de negócio
+- Validação de cenários críticos
+
+Ferramentas:
+
+- JUnit 5
+- Mockito
+
+---
+
+## Configuração (application.properties)
+
+```properties
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driver-class-name=org.h2.Driver
+spring.jpa.hibernate.ddl-auto=update
+
+app.base-url=http://localhost:8080
+app.storage.path=/tmp/uploads/
+```
+
+---
+
+## Próximos Passos (Pós-MVP)
+
+- Migrar H2 → MySQL
+- Autenticação (JWT)
+- Links privados
+- Download auditado
+- Expiração automática com Scheduler
+- Rate limit
+- Frontend em Angular
+- Dockerização
+- Observabilidade (logs, métricas)
+
+---
+
+Author: Walyson Gomes
