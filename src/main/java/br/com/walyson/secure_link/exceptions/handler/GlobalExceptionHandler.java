@@ -1,6 +1,7 @@
 package br.com.walyson.secure_link.exceptions.handler;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +12,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.com.walyson.secure_link.dto.error.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
@@ -20,13 +23,22 @@ public class GlobalExceptionHandler {
     Exception ex,
     HttpServletRequest request
   ) {
+    String errorId = UUID.randomUUID().toString();
+
+    log.error(
+      "Internal server error | errorId={} | path={}",
+      errorId,
+      request.getRequestURI(),
+      ex
+    );
+
     HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
     ApiError error = new ApiError(
       Instant.now(),
       status.value(),
       status.getReasonPhrase(), 
-      "An unexpected error occurred. Please try again later.",
+      "An unexpected error occurred. Reference ID: " + errorId,
       request.getRequestURI()
     );
 
