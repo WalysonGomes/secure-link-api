@@ -15,8 +15,10 @@ import br.com.walyson.secure_link.service.UploadLinkService;
 import br.com.walyson.secure_link.utils.CodeUtils;
 import br.com.walyson.secure_link.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UploadLinkServiceImpl implements UploadLinkService {
 
@@ -49,6 +51,13 @@ public class UploadLinkServiceImpl implements UploadLinkService {
     );
 
     repository.save(link);
+
+
+    log.info("Secure link created | shortCode={} | expiresAt={} | maxViews={}",
+      link.getShortCode(),
+      link.getExpiresAt(),
+      link.getMaxViews()
+    );
 
     return new CreateLinkResponse(
       shortCode,

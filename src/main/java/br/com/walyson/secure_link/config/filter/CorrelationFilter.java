@@ -32,12 +32,8 @@ public class CorrelationFilter extends OncePerRequestFilter {
       MDC.put(MDC_KEY, correlationId);
       response.setHeader(CORRELATION_ID_HEADER, correlationId);
       filterChain.doFilter(request, response);
-
     }finally{
       MDC.remove(MDC_KEY);
     }
-
   }
-
-  
 }

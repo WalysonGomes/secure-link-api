@@ -12,8 +12,10 @@ import br.com.walyson.secure_link.utils.FileUtils;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CreateLinkServiceImpl implements CreateLinkService {
 
@@ -37,6 +39,13 @@ public class CreateLinkServiceImpl implements CreateLinkService {
 
     repository.save(link);
 
+
+    log.info("Secure link created | shortCode={} | expiresAt={} | maxViews={}",
+      link.getShortCode(),
+      link.getExpiresAt(),
+      link.getMaxViews()
+    );
+
     return new CreateLinkResponse(
       link.getShortCode(),
       codeUtils.generateAccessUrl(link.getShortCode()),
@@ -45,5 +54,4 @@ public class CreateLinkServiceImpl implements CreateLinkService {
     );
 
   }
-
 }

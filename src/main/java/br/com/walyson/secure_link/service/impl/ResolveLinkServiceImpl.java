@@ -11,8 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ResolveLinkServiceImpl implements ResolveLinkService {
 
@@ -52,6 +54,8 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
 
     link.incrementViewCount();
     repository.save(link);
+
+    log.info("Resolving secure link | shortCode={}", shortCode);
 
     return link;
 
