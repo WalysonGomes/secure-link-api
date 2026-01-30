@@ -102,7 +102,7 @@ Content-Type: multipart/form-data
 
 ```bash
 curl -X POST http://localhost:8080/links/upload \
-  -F "file=@test.txt" \
+  -F "file=@./temp/test.txt" \
   -F "expiresAt=2026-02-01T23:59:59Z" \
   -F "maxViews=3"
 ```
