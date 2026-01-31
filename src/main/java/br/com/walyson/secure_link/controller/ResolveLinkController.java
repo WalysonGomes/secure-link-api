@@ -1,6 +1,7 @@
 package br.com.walyson.secure_link.controller;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,8 +31,17 @@ public class ResolveLinkController {
 
     SecureLink link = resolveLinkService.resolve(shortCode);
 
-    Path filePath = Paths.get(link.getFilePath());
+    if (link.getTargetUrl() != null && !link.getTargetUrl().isBlank()) {
+      return ResponseEntity.status(HttpStatus.FOUND) 
+          .location(URI.create(link.getTargetUrl()))
+          .build();
+    }
 
+    if (link.getFilePath() == null) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Link mapping error");
+    }
+
+    Path filePath = Paths.get(link.getFilePath());
     if(!Files.exists(filePath)){
       throw new ResponseStatusException(
         HttpStatus.NOT_FOUND, "File not found"

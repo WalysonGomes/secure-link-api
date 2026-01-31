@@ -13,9 +13,8 @@ Permitir que um serviço ou usuário:
 - Defina:
   - data de expiração
   - número máximo de visualizações
-
 - Compartilhe esse link
-- Garanta que o arquivo:
+- Garanta que o arquivo ou link:
   - expire automaticamente
   - seja invalidado após atingir o limite de acessos
 
@@ -23,15 +22,15 @@ Permitir que um serviço ou usuário:
 
 O **MVP (Minimum Viable Product)** representa a **menor versão funcional e completa** do produto, capaz de entregar valor real e validar o fluxo principal da aplicação.
 
-### MVP deste projeto inclui:
+### MVP inclui:
 
 - Criação de links seguros
 - Upload de arquivos via multipart
+- Criação de link encurtado para URLs externas
 - Resolução do link (`/l/{code}`)
 - Controle de:
   - expiração
   - número máximo de acessos
-
 - Persistência em banco **H2**
 - Tratamento padronizado de erros
 - Testes unitários básicos
@@ -83,7 +82,7 @@ br.com.walyson.secure_link
 
 ## Fluxo Principal do MVP
 
-### Upload do arquivo + criação do link
+### upload de arquivo + criação do link
 
 **Endpoint**
 
@@ -102,7 +101,7 @@ Content-Type: multipart/form-data
 
 ```bash
 curl -X POST http://localhost:8080/links/upload \
-  -F "file=@test.txt" \
+  -F "file=@temp/test.txt" \
   -F "expiresAt=2026-02-01T23:59:59Z" \
   -F "maxViews=3"
 ```
@@ -118,7 +117,52 @@ curl -X POST http://localhost:8080/links/upload \
 }
 ```
 
-### Acesso ao link seguro
+### Criação de link encurtado (para URL externa)
+
+**Endpoint**
+
+```http
+POST /links/create
+Content-Type: application/json
+```
+
+**Parâmetros**
+
+```json
+{
+  "targetUrl": "https://example.com/original",
+  "expiresAt": "2026-02-01T23:59:59Z",
+  "maxViews": 3
+}
+```
+
+**Exemplo com curl**
+
+```bash
+curl -X POST http://localhost:8080/links/create \
+  -H "Content-Type: application/json" \
+  -d '{"targetUrl": "https://example.com/original", "expiresAt": "2026-02-01T23:59:59Z", "maxViews": 3}'
+```
+
+**Resposta**
+
+```json
+{
+  "shortCode": "aBc123XY",
+  "accessUrl": "http://localhost:8080/l/aBc123XY",
+  "expiresAt": "2026-02-01T23:59:59Z",
+  "maxViews": 3
+}
+```
+
+**Comportamento ao acessar `/l/{shortCode}`**
+
+- HTTP 302 (Found) → redireciona para `targetUrl` se definido
+- Expiração e número máximo de acessos são respeitados
+- Se o link não existe → HTTP 404
+- Se atingiu limite de visualizações → HTTP 410 (Gone)
+
+### Acesso ao link seguro (comportamento genérico)
 
 **Endpoint**
 
@@ -126,18 +170,25 @@ curl -X POST http://localhost:8080/links/upload \
 GET /l/{shortCode}
 ```
 
-**Comportamento**
+**Validações**
 
-- Valida se o link existe
-- Verifica expiração
-- Verifica número máximo de acessos
-- Incrementa contador
-- Retorna o arquivo
+- Link existe?
+- Link expirado?
+- Número máximo de visualizações atingido?
 
-**Exemplo**
+**Se for um arquivo:** retorna o conteúdo com cabeçalho `Content-Disposition`
+**Se for URL externa:** retorna 302 redirect
+
+**Exemplo curl (arquivo)**
 
 ```bash
 curl -v http://localhost:8080/l/RTgJDgla
+```
+
+**Exemplo curl (URL externa)**
+
+```bash
+curl -v http://localhost:8080/l/aBc123XY
 ```
 
 ## Regras de Negócio Aplicadas
@@ -146,9 +197,9 @@ curl -v http://localhost:8080/l/RTgJDgla
 - Link inválido se:
   - expirado
   - número máximo de acessos atingido
-
-- Arquivo armazenado no filesystem
+- Arquivo armazenado no filesystem (para upload)
 - Persistência desacoplada da lógica de upload
+- Possibilidade de redirecionamento para URL externa (encurtador)
 
 ## Padronização de Erros
 
@@ -158,7 +209,7 @@ O projeto utiliza `@ControllerAdvice` para:
 - Link não encontrado
 - Link expirado
 - Limite de acessos atingido
-- Erros internos (IO, filesystem)
+- Erros internos (IO, filesystem, mapping)
 
 **Formato padrão**
 
@@ -185,7 +236,7 @@ Ferramentas:
 - JUnit 5
 - Mockito
 
-## Configuração (application.properties)
+## Configuração (application.properties para MVP)
 
 ```properties
 spring.datasource.url=jdbc:h2:mem:testdb
