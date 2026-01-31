@@ -33,6 +33,9 @@ public class SecureLink {
   @Column(name = "original_file_name")
   private String originalFileName;
 
+  @Column(name = "target_url", length = 500)
+  private String targetUrl;
+
   @Column(name = "expires_at")
   private Instant expiresAt;
 
@@ -49,16 +52,17 @@ public class SecureLink {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt = Instant.now();
 
-  public SecureLink(
-    String shortCode,
-    String filePath,
-    String originalFileName,
-    Instant expiresAt,
-    Integer maxViews
-  ) {
+  public SecureLink(String shortCode, String filePath, String originalFileName, Instant expiresAt, Integer maxViews) {
     this.shortCode = shortCode;
     this.filePath = filePath;
     this.originalFileName = originalFileName;
+    this.expiresAt = expiresAt;
+    this.maxViews = maxViews;
+  }
+
+  public SecureLink(String shortCode, String targetUrl, Instant expiresAt, Integer maxViews) {
+    this.shortCode = shortCode;
+    this.targetUrl = targetUrl;
     this.expiresAt = expiresAt;
     this.maxViews = maxViews;
   }
