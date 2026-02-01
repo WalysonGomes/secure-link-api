@@ -1,6 +1,6 @@
 package br.com.walyson.secure_link.exceptions.handler;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
     HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
     ApiError error = new ApiError(
-      Instant.now(),
+      OffsetDateTime.now(),
       status.value(),
       status.getReasonPhrase(), 
       "An unexpected error occurred. Reference ID: " + errorId,
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
     HttpStatus status = HttpStatus.BAD_REQUEST;
 
     ApiError error = new ApiError(
-      Instant.now(),
+      OffsetDateTime.now(),
       status.value(),
       status.getReasonPhrase(), 
       message,
@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
     : "HTTP Status " + statusCode;
 
     ApiError error = new ApiError(
-      Instant.now(),
+      OffsetDateTime.now(),
       statusCode,
       reasonPhrase,
       ex.getReason(),

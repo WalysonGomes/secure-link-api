@@ -1,6 +1,6 @@
 package br.com.walyson.secure_link.service;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +35,7 @@ class ResolveLinkServiceTest {
     SecureLink link = new SecureLink(
       "xyz789",
       "https://google.com",
-      Instant.now().plusSeconds(3600),
+      OffsetDateTime.now().plusSeconds(3600),
       5
     );
 
@@ -55,7 +55,7 @@ class ResolveLinkServiceTest {
       "abc123",
       "/tmp/uploads/test.txt",
       "test.txt",
-      Instant.now().plusSeconds(3600),
+      OffsetDateTime.now().plusSeconds(3600),
       10
     );
 
@@ -85,7 +85,7 @@ class ResolveLinkServiceTest {
   @Test
   @DisplayName("Deve lançar 410 GONE quando o link estiver expirado")
   void shouldThrowGoneWhenLinkIsExpired() {
-    SecureLink link = new SecureLink("abc", "url", Instant.now().minusSeconds(10), 3);
+    SecureLink link = new SecureLink("abc", "url", OffsetDateTime.now().minusSeconds(10), 3);
     when(repository.findByShortCode("abc")).thenReturn(Optional.of(link));
     
     assertThrows(ResponseStatusException.class, () -> service.resolve("abc"));

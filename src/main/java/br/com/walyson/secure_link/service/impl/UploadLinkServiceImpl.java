@@ -1,6 +1,6 @@
 package br.com.walyson.secure_link.service.impl;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class UploadLinkServiceImpl implements UploadLinkService {
 
   @Override
   @Transactional
-  public CreateLinkResponse upload(MultipartFile file, Instant expiresAt, Integer maxViews) {
+  public CreateLinkResponse upload(MultipartFile file, OffsetDateTime expiresAt, Integer maxViews) {
 
     if(file.isEmpty()){
       throw new ResponseStatusException(

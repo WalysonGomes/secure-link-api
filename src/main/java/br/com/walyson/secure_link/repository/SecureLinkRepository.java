@@ -1,6 +1,6 @@
 package br.com.walyson.secure_link.repository;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +29,6 @@ public interface SecureLinkRepository extends JpaRepository<SecureLink, UUID> {
     (l.maxViews IS NOT NULL AND l.viewCount >= l.maxViews)
     )
     """)
-  List<SecureLink> findLinksToExpire(@Param("now") Instant now);
+  List<SecureLink> findLinksToExpire(@Param("now") OffsetDateTime now);
 
 }

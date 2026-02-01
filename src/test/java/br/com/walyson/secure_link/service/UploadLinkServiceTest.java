@@ -1,6 +1,6 @@
 package br.com.walyson.secure_link.service;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,7 @@ class UploadLinkServiceTest {
         MultipartFile file = new MockMultipartFile(
             "file", "test.txt", "text/plain", "content".getBytes()
         );
-        Instant expiresAt = Instant.now().plusSeconds(3600);
+        OffsetDateTime expiresAt = OffsetDateTime.now().plusSeconds(3600);
         Integer maxViews = 3;
 
         when(codeUtils.generateUniqueShortCode()).thenReturn("abc12345");
@@ -67,7 +67,7 @@ class UploadLinkServiceTest {
         MultipartFile emptyFile = new MockMultipartFile("file", new byte[0]);
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            service.upload(emptyFile, Instant.now(), 1);
+            service.upload(emptyFile, OffsetDateTime.now(), 1);
         });
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());

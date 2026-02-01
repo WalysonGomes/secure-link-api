@@ -1,6 +1,6 @@
 package br.com.walyson.secure_link.domain;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -37,7 +37,7 @@ public class SecureLink {
   private String targetUrl;
 
   @Column(name = "expires_at")
-  private Instant expiresAt;
+  private OffsetDateTime expiresAt;
 
   @Column(name = "max_views")
   private Integer maxViews; 
@@ -50,9 +50,9 @@ public class SecureLink {
   private LinkStatus status = LinkStatus.ACTIVE;
 
   @Column(name = "created_at", nullable = false)
-  private Instant createdAt = Instant.now();
+  private OffsetDateTime createdAt = OffsetDateTime.now();
 
-  public SecureLink(String shortCode, String filePath, String originalFileName, Instant expiresAt, Integer maxViews) {
+  public SecureLink(String shortCode, String filePath, String originalFileName, OffsetDateTime expiresAt, Integer maxViews) {
     this.shortCode = shortCode;
     this.filePath = filePath;
     this.originalFileName = originalFileName;
@@ -60,7 +60,7 @@ public class SecureLink {
     this.maxViews = maxViews;
   }
 
-  public SecureLink(String shortCode, String targetUrl, Instant expiresAt, Integer maxViews) {
+  public SecureLink(String shortCode, String targetUrl, OffsetDateTime expiresAt, Integer maxViews) {
     this.shortCode = shortCode;
     this.targetUrl = targetUrl;
     this.expiresAt = expiresAt;
@@ -71,7 +71,7 @@ public class SecureLink {
     if (expiresAt == null) {
       return false;
     }
-    boolean expired = Instant.now().isAfter(expiresAt);
+    boolean expired = OffsetDateTime.now(expiresAt.getOffset()).isAfter(expiresAt);
     if (expired) {
       expire();
     }

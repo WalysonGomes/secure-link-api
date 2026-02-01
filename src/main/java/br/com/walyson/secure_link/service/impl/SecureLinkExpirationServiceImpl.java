@@ -1,6 +1,6 @@
 package br.com.walyson.secure_link.service.impl;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class SecureLinkExpirationServiceImpl implements SecureLinkExpirationServ
   @Override
   @Transactional
   public int expireLinks() {
-    Instant now = Instant.now();
+    OffsetDateTime now = OffsetDateTime.now();
     
     List<SecureLink> expiredLinks =
     repository.findLinksToExpire(now);
