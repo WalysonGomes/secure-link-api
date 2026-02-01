@@ -9,6 +9,8 @@ import br.com.walyson.secure_link.repository.SecureLinkRepository;
 import br.com.walyson.secure_link.service.CreateLinkService;
 import br.com.walyson.secure_link.utils.CodeUtils;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ public class CreateLinkServiceImpl implements CreateLinkService {
 
   private final CodeUtils codeUtils;
   private final SecureLinkRepository repository;
+  private final MeterRegistry meterRegistry;
 
   @Override
   @Transactional
@@ -35,8 +38,9 @@ public class CreateLinkServiceImpl implements CreateLinkService {
 
     repository.save(link);
 
-    log.info("secure_link_created | type={} shortCode={} expiresAt={} maxViews={}",
-      link.getTargetUrl() != null ? "REDIRECT" : "FILE",
+    meterRegistry.counter("secure_link_created_total", "type", "REDIRECT").increment();
+
+    log.info("secure_link_created | type=REDIRECT shortCode={} expiresAt={} maxViews={}",
       link.getShortCode(),
       link.getExpiresAt(),
       link.getMaxViews()
