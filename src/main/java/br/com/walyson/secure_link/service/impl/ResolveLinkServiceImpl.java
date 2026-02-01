@@ -23,43 +23,37 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
   @Override
   @Transactional
   public SecureLink resolve(String shortCode) {
+    log.info("secure_link_resolve_attempt | shortCode={}", shortCode);
 
     SecureLink link = repository.findByShortCode(shortCode)
-    .orElseThrow(() -> new ResponseStatusException(
-      HttpStatus.NOT_FOUND, "Link not found"
-    ));
+    .orElseThrow(() -> {
+      log.warn("secure_link_resolve_denied | shortCode={} reason=NOT_FOUND", shortCode);
+      return new ResponseStatusException(HttpStatus.NOT_FOUND, "Link not found");
+    });
 
-    if(link.isExpired()){
+    if (link.isExpired()) {
       repository.save(link);
-      throw new ResponseStatusException(
-        HttpStatus.GONE, "Link has expired"
-      );
+      log.warn("secure_link_resolve_denied | shortCode={} reason=EXPIRED", shortCode);
+      throw new ResponseStatusException(HttpStatus.GONE, "Link has expired");
     }
 
-
-    if(link.hasReachedViewLimit()){
+    if (link.hasReachedViewLimit()) {
       link.expire();
       repository.save(link);
-      throw new ResponseStatusException(
-        HttpStatus.GONE, "View limit reached"
-      );
+      log.warn("secure_link_resolve_denied | shortCode={} reason=VIEW_LIMIT_REACHED", shortCode);
+      throw new ResponseStatusException(HttpStatus.GONE, "View limit reached");
     }
 
-
-    if(link.getStatus() != LinkStatus.ACTIVE){
-      throw new ResponseStatusException(
-        HttpStatus.GONE, "Link is no longer active"
-      );
+    if (link.getStatus() != LinkStatus.ACTIVE) {
+      log.warn("secure_link_resolve_denied | shortCode={} reason=STATUS_{}", shortCode, link.getStatus());
+      throw new ResponseStatusException(HttpStatus.GONE, "Link is no longer active");
     }
 
     link.incrementViewCount();
     repository.save(link);
 
-    log.info("Resolving secure link | shortCode={}", shortCode);
+    log.info("secure_link_resolve_success | shortCode={} viewCount={}", link.getShortCode(), link.getViewCount());
 
     return link;
-
   }
-
-
 }

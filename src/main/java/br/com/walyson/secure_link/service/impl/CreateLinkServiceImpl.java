@@ -35,8 +35,8 @@ public class CreateLinkServiceImpl implements CreateLinkService {
 
     repository.save(link);
 
-
-    log.info("Secure link created | shortCode={} | expiresAt={} | maxViews={}",
+    log.info("secure_link_created | type={} shortCode={} expiresAt={} maxViews={}",
+      link.getTargetUrl() != null ? "REDIRECT" : "FILE",
       link.getShortCode(),
       link.getExpiresAt(),
       link.getMaxViews()
@@ -48,6 +48,5 @@ public class CreateLinkServiceImpl implements CreateLinkService {
       link.getExpiresAt(),
       link.getMaxViews()
     );
-
   }
 }

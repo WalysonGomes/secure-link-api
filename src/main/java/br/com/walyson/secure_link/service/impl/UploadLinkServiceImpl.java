@@ -52,8 +52,8 @@ public class UploadLinkServiceImpl implements UploadLinkService {
 
     repository.save(link);
 
-
-    log.info("Secure link created | shortCode={} | expiresAt={} | maxViews={}",
+    log.info("secure_link_created | type={} shortCode={} expiresAt={} maxViews={}",
+      link.getTargetUrl() != null ? "REDIRECT" : "FILE",
       link.getShortCode(),
       link.getExpiresAt(),
       link.getMaxViews()
@@ -65,9 +65,5 @@ public class UploadLinkServiceImpl implements UploadLinkService {
       expiresAt,
       maxViews
     );
-
-
   }
-
-
 }

@@ -15,11 +15,10 @@ public class SecureLinkExpirationJob {
 
   @Scheduled(fixedDelayString = "PT1M")
   public void expireLinks() {
-    int total = service.expireLinks();
-
-    if (total > 0) {
-      log.info("Expired {} secure links", total);
-    }
+    long startTime = System.currentTimeMillis();
+    int totalExpired = service.expireLinks();
+    long durationMs = System.currentTimeMillis() - startTime;
+    
+    log.info("secure_link_expiration_job | expired={} durationMs={}", totalExpired, durationMs);
   }
-
 }
