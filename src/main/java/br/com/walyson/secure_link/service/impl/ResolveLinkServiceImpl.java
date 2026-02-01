@@ -10,6 +10,10 @@ import br.com.walyson.secure_link.service.ResolveLinkService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,41 +23,86 @@ import lombok.extern.slf4j.Slf4j;
 public class ResolveLinkServiceImpl implements ResolveLinkService {
 
   private final SecureLinkRepository repository;
+  private final MeterRegistry meterRegistry;
 
   @Override
   @Transactional
   public SecureLink resolve(String shortCode) {
-    log.info("secure_link_resolve_attempt | shortCode={}", shortCode);
 
-    SecureLink link = repository.findByShortCode(shortCode)
-    .orElseThrow(() -> {
-      log.warn("secure_link_resolve_denied | shortCode={} reason=NOT_FOUND", shortCode);
-      return new ResponseStatusException(HttpStatus.NOT_FOUND, "Link not found");
-    });
+    Timer.Sample timer = Timer.start(meterRegistry);
 
-    if (link.isExpired()) {
+    try{
+      log.info("secure_link_resolve_attempt | shortCode={}", shortCode);
+
+      Counter.builder("secure_link_resolve_attempts_total")
+        .register(meterRegistry)
+        .increment();
+
+      SecureLink link = repository.findByShortCode(shortCode)
+      .orElseThrow(() -> {
+        log.warn("secure_link_resolve_denied | shortCode={} reason=NOT_FOUND", shortCode);
+
+        Counter.builder("secure_link_resolve_denied_total")
+          .tag("reason", "not_found")
+          .register(meterRegistry)
+          .increment();
+
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Link not found");
+      });
+
+      if (link.isExpired()) {
+        repository.save(link);
+        log.warn("secure_link_resolve_denied | shortCode={} reason=EXPIRED", shortCode);
+
+        Counter.builder("secure_link_resolve_denied_total")
+          .tag("reason", "expired")
+          .register(meterRegistry)
+          .increment();
+
+        throw new ResponseStatusException(HttpStatus.GONE, "Link has expired");
+      }
+
+      if (link.hasReachedViewLimit()) {
+        link.expire();
+        repository.save(link);
+        log.warn("secure_link_resolve_denied | shortCode={} reason=VIEW_LIMIT_REACHED", shortCode);
+
+        Counter.builder("secure_link_resolve_denied_total")
+          .tag("reason", "view_limit_reached")
+          .register(meterRegistry)
+          .increment();
+
+        throw new ResponseStatusException(HttpStatus.GONE, "View limit reached");
+      }
+
+      if (link.getStatus() != LinkStatus.ACTIVE) {
+        log.warn("secure_link_resolve_denied | shortCode={} reason=STATUS_{}", shortCode, link.getStatus());
+
+        Counter.builder("secure_link_resolve_denied_total")
+          .tag("reason", "inactive")
+          .register(meterRegistry)
+          .increment();
+
+        throw new ResponseStatusException(HttpStatus.GONE, "Link is no longer active");
+      }
+
+      link.incrementViewCount();
       repository.save(link);
-      log.warn("secure_link_resolve_denied | shortCode={} reason=EXPIRED", shortCode);
-      throw new ResponseStatusException(HttpStatus.GONE, "Link has expired");
+
+      log.info("secure_link_resolve_success | shortCode={} viewCount={}", link.getShortCode(), link.getViewCount());
+
+      Counter.builder("secure_link_resolve_success_total")
+        .register(meterRegistry)
+        .increment();
+
+      return link;
+
+    }finally{
+      timer.stop(
+        Timer.builder("secure_link_resolve_duration_seconds")
+        .description("Time spent resolving secure links")
+        .register(meterRegistry)
+      );
     }
-
-    if (link.hasReachedViewLimit()) {
-      link.expire();
-      repository.save(link);
-      log.warn("secure_link_resolve_denied | shortCode={} reason=VIEW_LIMIT_REACHED", shortCode);
-      throw new ResponseStatusException(HttpStatus.GONE, "View limit reached");
-    }
-
-    if (link.getStatus() != LinkStatus.ACTIVE) {
-      log.warn("secure_link_resolve_denied | shortCode={} reason=STATUS_{}", shortCode, link.getStatus());
-      throw new ResponseStatusException(HttpStatus.GONE, "Link is no longer active");
-    }
-
-    link.incrementViewCount();
-    repository.save(link);
-
-    log.info("secure_link_resolve_success | shortCode={} viewCount={}", link.getShortCode(), link.getViewCount());
-
-    return link;
   }
 }
