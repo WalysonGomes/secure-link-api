@@ -9,5 +9,6 @@ import jakarta.validation.constraints.NotNull;
 public record LinkUploadRequest(
   @NotNull MultipartFile file,
   OffsetDateTime expiresAt,
-  Integer maxViews
+  Integer maxViews,
+  String password
 ) {}

@@ -3,6 +3,7 @@ package br.com.walyson.secure_link.service.impl;
 import java.time.OffsetDateTime;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,10 +30,11 @@ public class UploadLinkServiceImpl implements UploadLinkService {
   private final FileUtils fileUtils;
   private final SecureLinkRepository repository;
   private final MeterRegistry meterRegistry;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
-  public CreateLinkResponse upload(MultipartFile file, OffsetDateTime expiresAt, Integer maxViews) {
+  public CreateLinkResponse upload(MultipartFile file, OffsetDateTime expiresAt, Integer maxViews, String password) {
 
     if(file.isEmpty()){
       throw new ResponseStatusException(
@@ -52,14 +54,20 @@ public class UploadLinkServiceImpl implements UploadLinkService {
       maxViews
     );
 
+    if (password != null && !password.isBlank()) {
+      String hash = passwordEncoder.encode(password);
+      link.protectWithPassword(hash);
+    }
+
     repository.save(link);
 
     meterRegistry.counter("secure_link_created_total", "type", "FILE").increment();
 
-    log.info("secure_link_created | type=FILE shortCode={} expiresAt={} maxViews={}",
+    log.info("secure_link_created | type=FILE shortCode={} expiresAt={} maxViews={} passwordProtected={}",
       link.getShortCode(),
       link.getExpiresAt(),
-      link.getMaxViews()
+      link.getMaxViews(),
+      link.isPasswordProtected()
     );
 
     return new CreateLinkResponse(

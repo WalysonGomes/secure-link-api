@@ -26,7 +26,8 @@ public class UploadLinkController {
     return uploadLinkService.upload(
       request.file(), 
       request.expiresAt(), 
-      request.maxViews()
+      request.maxViews(),
+      request.password()
     );
   }
 }

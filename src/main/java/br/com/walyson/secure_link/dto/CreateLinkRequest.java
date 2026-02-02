@@ -11,5 +11,6 @@ import jakarta.validation.constraints.Positive;
 public record CreateLinkRequest(
   @Future OffsetDateTime expiresAt,
   @Positive Integer maxViews,
-  @NotBlank @URL String targetUrl
+  @NotBlank @URL String targetUrl,
+  String password 
 ) {}

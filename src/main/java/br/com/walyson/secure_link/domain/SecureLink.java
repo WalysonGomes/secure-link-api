@@ -49,6 +49,12 @@ public class SecureLink {
   @Column(nullable = false)
   private LinkStatus status = LinkStatus.ACTIVE;
 
+  @Column(name = "password_hash")
+  private String passwordHash;
+
+  @Column(name = "password_protected", nullable = false)
+  private boolean passwordProtected;
+
   @Column(name = "created_at", nullable = false)
   private OffsetDateTime createdAt = OffsetDateTime.now();
 
@@ -93,4 +99,14 @@ public class SecureLink {
   public void expire() {
     this.status = LinkStatus.EXPIRED;
   }
+
+  public void protectWithPassword(String passwordHash) {
+    this.passwordHash = passwordHash;
+    this.passwordProtected = true;
+  }
+
+  public boolean isPasswordProtected() {
+    return passwordProtected;
+  }
+
 }

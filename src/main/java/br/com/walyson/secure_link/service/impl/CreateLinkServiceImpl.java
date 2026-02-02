@@ -1,5 +1,6 @@
 package br.com.walyson.secure_link.service.impl;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.walyson.secure_link.domain.SecureLink;
@@ -23,6 +24,7 @@ public class CreateLinkServiceImpl implements CreateLinkService {
   private final CodeUtils codeUtils;
   private final SecureLinkRepository repository;
   private final MeterRegistry meterRegistry;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
@@ -36,14 +38,21 @@ public class CreateLinkServiceImpl implements CreateLinkService {
       request.maxViews()
     );
 
+    if (request.password() != null && !request.password().isBlank()) {
+      String hash = passwordEncoder.encode(request.password());
+      link.protectWithPassword(hash);
+    }
+
     repository.save(link);
 
     meterRegistry.counter("secure_link_created_total", "type", "REDIRECT").increment();
 
-    log.info("secure_link_created | type=REDIRECT shortCode={} expiresAt={} maxViews={}",
+    log.info(
+      "secure_link_created | type=REDIRECT shortCode={} expiresAt={} maxViews={} passwordProtected={}",
       link.getShortCode(),
       link.getExpiresAt(),
-      link.getMaxViews()
+      link.getMaxViews(),
+      link.isPasswordProtected()
     );
 
     return new CreateLinkResponse(

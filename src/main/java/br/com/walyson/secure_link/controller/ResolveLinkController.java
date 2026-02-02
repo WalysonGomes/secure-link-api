@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,9 +28,12 @@ public class ResolveLinkController {
   private final ResolveLinkService resolveLinkService;
 
   @GetMapping("/l/{shortCode}")
-  public ResponseEntity<Resource> resolve(@PathVariable String shortCode) throws IOException{
+  public ResponseEntity<Resource> resolve(
+    @PathVariable String shortCode,
+    @RequestHeader(value = "X-Link-Password", required = false) String password
+  ) throws IOException {
 
-    SecureLink link = resolveLinkService.resolve(shortCode);
+    SecureLink link = resolveLinkService.resolve(shortCode, password);
 
     if (link.getTargetUrl() != null && !link.getTargetUrl().isBlank()) {
       return ResponseEntity.status(HttpStatus.FOUND) 

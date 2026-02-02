@@ -8,6 +8,6 @@ import br.com.walyson.secure_link.dto.CreateLinkResponse;
 
 public interface UploadLinkService {
 
-  CreateLinkResponse upload(MultipartFile file, OffsetDateTime expiresAt, Integer maxViews);
+  CreateLinkResponse upload(MultipartFile file, OffsetDateTime expiresAt, Integer maxViews, String password);
   
 }

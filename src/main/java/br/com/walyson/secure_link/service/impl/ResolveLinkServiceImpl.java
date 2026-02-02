@@ -1,6 +1,7 @@
 package br.com.walyson.secure_link.service.impl;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.walyson.secure_link.domain.LinkStatus;
@@ -24,10 +25,11 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
 
   private final SecureLinkRepository repository;
   private final MeterRegistry meterRegistry;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
-  public SecureLink resolve(String shortCode) {
+  public SecureLink resolve(String shortCode, String password) {
 
     Timer.Sample timer = Timer.start(meterRegistry);
 
@@ -85,6 +87,28 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
 
         throw new ResponseStatusException(HttpStatus.GONE, "Link is no longer active");
       }
+
+
+      if (link.isPasswordProtected()) {
+        if (password == null || password.isBlank()) {
+          log.warn("secure_link_resolve_denied | shortCode={} reason=PASSWORD_REQUIRED", shortCode);
+
+          meterRegistry.counter("secure_link_resolve_denied_total", "reason", "password_required")
+            .increment();
+
+          throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Password required");
+        }
+
+        if (!passwordEncoder.matches(password, link.getPasswordHash())) {
+          log.warn("secure_link_resolve_denied | shortCode={} reason=INVALID_PASSWORD", shortCode);
+
+          meterRegistry.counter("secure_link_resolve_denied_total", "reason", "invalid_password")
+            .increment();
+
+          throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
+        }
+      }
+
 
       link.incrementViewCount();
       repository.save(link);

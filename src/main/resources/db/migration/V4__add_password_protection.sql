@@ -1,0 +1,3 @@
+ALTER TABLE secure_link
+ADD COLUMN password_hash VARCHAR(255),
+ADD COLUMN password_protected BOOLEAN NOT NULL DEFAULT FALSE;
