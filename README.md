@@ -1,6 +1,6 @@
 # Secure Link API — MVP
 
-API backend desenvolvida em **Java + Spring Boot** para criação e compartilhamento de links seguros para arquivos, com controle de expiração e número máximo de acessos.
+API backend desenvolvida em **Java + Spring Boot** para criação e compartilhamento de links seguros, com controle de expiração e número máximo de acessos.
 
 Este projeto foi desenvolvido com foco em **aprendizado prático**, arquitetura limpa e aplicação de conceitos utilizados no mercado, partindo de um **MVP bem definido** e evolutivo.
 
