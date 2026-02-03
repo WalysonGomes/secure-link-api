@@ -1,5 +1,7 @@
 package br.com.walyson.secure_link.service.impl;
 
+import java.time.OffsetDateTime;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +11,7 @@ import br.com.walyson.secure_link.dto.CreateLinkResponse;
 import br.com.walyson.secure_link.repository.SecureLinkRepository;
 import br.com.walyson.secure_link.service.CreateLinkService;
 import br.com.walyson.secure_link.utils.CodeUtils;
+import br.com.walyson.secure_link.config.LinkTtlProperties;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -25,16 +28,18 @@ public class CreateLinkServiceImpl implements CreateLinkService {
   private final SecureLinkRepository repository;
   private final MeterRegistry meterRegistry;
   private final PasswordEncoder passwordEncoder;
+  private final LinkTtlProperties linkTtlProperties;
 
   @Override
   @Transactional
   public CreateLinkResponse create(CreateLinkRequest request) {
     String shortCode = codeUtils.generateUniqueShortCode();
+    OffsetDateTime expiresAt = resolveExpiresAt(request.expiresAt());
 
     SecureLink link = new SecureLink(
       shortCode,
       request.targetUrl(),
-      request.expiresAt(),
+      expiresAt,
       request.maxViews()
     );
 
@@ -62,4 +67,11 @@ public class CreateLinkServiceImpl implements CreateLinkService {
       link.getMaxViews()
     );
   }
+
+  private OffsetDateTime resolveExpiresAt(OffsetDateTime requestedExpiresAt) {
+    return requestedExpiresAt != null
+    ? requestedExpiresAt
+    : OffsetDateTime.now().plus(linkTtlProperties.getDefaultTtl());
+  }
+
 }

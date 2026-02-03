@@ -17,6 +17,7 @@ import br.com.walyson.secure_link.repository.SecureLinkRepository;
 import br.com.walyson.secure_link.service.UploadLinkService;
 import br.com.walyson.secure_link.utils.CodeUtils;
 import br.com.walyson.secure_link.utils.FileUtils;
+import br.com.walyson.secure_link.config.LinkTtlProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,8 +32,8 @@ public class UploadLinkServiceImpl implements UploadLinkService {
   private final SecureLinkRepository repository;
   private final MeterRegistry meterRegistry;
   private final PasswordEncoder passwordEncoder;
+  private final LinkTtlProperties linkTtlProperties;
 
-  @Override
   @Transactional
   public CreateLinkResponse upload(MultipartFile file, OffsetDateTime expiresAt, Integer maxViews, String password) {
 
@@ -46,11 +47,13 @@ public class UploadLinkServiceImpl implements UploadLinkService {
     String storedFilename = fileUtils.storeFile(file);
     String filePath = fileUtils.generateFilePath(storedFilename);
 
+    OffsetDateTime resolvedExpiresAt = resolveExpiresAt(expiresAt);
+
     SecureLink link = new SecureLink(
       shortCode,
       filePath,
       file.getOriginalFilename(),
-      expiresAt,
+      resolvedExpiresAt,
       maxViews
     );
 
@@ -71,10 +74,18 @@ public class UploadLinkServiceImpl implements UploadLinkService {
     );
 
     return new CreateLinkResponse(
-      shortCode,
-      codeUtils.generateAccessUrl(shortCode),
-      expiresAt,
-      maxViews
+      link.getShortCode(),
+      codeUtils.generateAccessUrl(link.getShortCode()),
+      link.getExpiresAt(),
+      link.getMaxViews()
     );
   }
+
+
+  private OffsetDateTime resolveExpiresAt(OffsetDateTime requestedExpiresAt) {
+    return requestedExpiresAt != null
+    ? requestedExpiresAt
+    : OffsetDateTime.now().plus(linkTtlProperties.getDefaultTtl());
+  }
+
 }
