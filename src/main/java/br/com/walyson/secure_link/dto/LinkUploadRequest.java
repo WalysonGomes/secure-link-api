@@ -4,11 +4,13 @@ import java.time.OffsetDateTime;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public record LinkUploadRequest(
   @NotNull MultipartFile file,
-  OffsetDateTime expiresAt,
-  Integer maxViews,
+  @Future OffsetDateTime expiresAt,
+  @Positive Integer maxViews,
   String password
 ) {}
