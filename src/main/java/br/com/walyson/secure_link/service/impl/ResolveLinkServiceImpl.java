@@ -63,7 +63,7 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
           .register(meterRegistry)
           .increment();
 
-        auditService.audit(shortCode, AccessResult.NOT_FOUND, null, null);
+        auditService.audit(shortCode, AccessResult.NOT_FOUND, context.ipAddress(), context.userAgent());
 
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Link not found");
       });
