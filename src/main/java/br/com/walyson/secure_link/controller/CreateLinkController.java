@@ -14,7 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/links")
+@RequestMapping("/api/links")
 @RequiredArgsConstructor
 public class CreateLinkController {
 

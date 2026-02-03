@@ -13,7 +13,7 @@ import br.com.walyson.secure_link.service.UploadLinkService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/links")
+@RequestMapping("/api/links")
 @RequiredArgsConstructor
 public class UploadLinkController {
 
