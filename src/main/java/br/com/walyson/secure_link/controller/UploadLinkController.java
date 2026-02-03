@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import br.com.walyson.secure_link.dto.CreateLinkResponse;
-import br.com.walyson.secure_link.dto.LinkUploadRequest;
+import br.com.walyson.secure_link.dto.CreateLinkResponseDto;
+import br.com.walyson.secure_link.dto.LinkUploadRequestDto;
 import br.com.walyson.secure_link.service.UploadLinkService;
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +21,7 @@ public class UploadLinkController {
 
   @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  public CreateLinkResponse upload(@ModelAttribute LinkUploadRequest request) {
+  public CreateLinkResponseDto upload(@ModelAttribute LinkUploadRequestDto request) {
 
     return uploadLinkService.upload(
       request.file(), 

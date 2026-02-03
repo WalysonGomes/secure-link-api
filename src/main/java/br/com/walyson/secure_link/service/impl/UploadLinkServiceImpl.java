@@ -12,7 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import br.com.walyson.secure_link.domain.SecureLink;
-import br.com.walyson.secure_link.dto.CreateLinkResponse;
+import br.com.walyson.secure_link.dto.CreateLinkResponseDto;
 import br.com.walyson.secure_link.repository.SecureLinkRepository;
 import br.com.walyson.secure_link.service.UploadLinkService;
 import br.com.walyson.secure_link.utils.CodeUtils;
@@ -35,7 +35,7 @@ public class UploadLinkServiceImpl implements UploadLinkService {
   private final LinkTtlProperties linkTtlProperties;
 
   @Transactional
-  public CreateLinkResponse upload(MultipartFile file, OffsetDateTime expiresAt, Integer maxViews, String password) {
+  public CreateLinkResponseDto upload(MultipartFile file, OffsetDateTime expiresAt, Integer maxViews, String password) {
 
     if(file.isEmpty()){
       throw new ResponseStatusException(
@@ -73,7 +73,7 @@ public class UploadLinkServiceImpl implements UploadLinkService {
       link.isPasswordProtected()
     );
 
-    return new CreateLinkResponse(
+    return new CreateLinkResponseDto(
       link.getShortCode(),
       codeUtils.generateAccessUrl(link.getShortCode()),
       link.getExpiresAt(),

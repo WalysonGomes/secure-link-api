@@ -1,8 +1,8 @@
 package br.com.walyson.secure_link.service;
 
-import br.com.walyson.secure_link.dto.CreateLinkRequest;
-import br.com.walyson.secure_link.dto.CreateLinkResponse;
+import br.com.walyson.secure_link.dto.CreateLinkRequestDto;
+import br.com.walyson.secure_link.dto.CreateLinkResponseDto;
 
 public interface CreateLinkService {
-  CreateLinkResponse create(CreateLinkRequest request);
+  CreateLinkResponseDto create(CreateLinkRequestDto request);
 }

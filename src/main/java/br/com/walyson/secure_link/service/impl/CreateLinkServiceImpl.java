@@ -6,8 +6,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.walyson.secure_link.domain.SecureLink;
-import br.com.walyson.secure_link.dto.CreateLinkRequest;
-import br.com.walyson.secure_link.dto.CreateLinkResponse;
+import br.com.walyson.secure_link.dto.CreateLinkRequestDto;
+import br.com.walyson.secure_link.dto.CreateLinkResponseDto;
 import br.com.walyson.secure_link.repository.SecureLinkRepository;
 import br.com.walyson.secure_link.service.CreateLinkService;
 import br.com.walyson.secure_link.utils.CodeUtils;
@@ -32,7 +32,7 @@ public class CreateLinkServiceImpl implements CreateLinkService {
 
   @Override
   @Transactional
-  public CreateLinkResponse create(CreateLinkRequest request) {
+  public CreateLinkResponseDto create(CreateLinkRequestDto request) {
     String shortCode = codeUtils.generateUniqueShortCode();
     OffsetDateTime expiresAt = resolveExpiresAt(request.expiresAt());
 
@@ -60,7 +60,7 @@ public class CreateLinkServiceImpl implements CreateLinkService {
       link.isPasswordProtected()
     );
 
-    return new CreateLinkResponse(
+    return new CreateLinkResponseDto(
       link.getShortCode(),
       codeUtils.generateAccessUrl(link.getShortCode()),
       link.getExpiresAt(),

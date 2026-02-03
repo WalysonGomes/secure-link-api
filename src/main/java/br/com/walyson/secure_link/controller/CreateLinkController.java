@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.walyson.secure_link.dto.CreateLinkRequest;
-import br.com.walyson.secure_link.dto.CreateLinkResponse;
+import br.com.walyson.secure_link.dto.CreateLinkRequestDto;
+import br.com.walyson.secure_link.dto.CreateLinkResponseDto;
 import br.com.walyson.secure_link.service.CreateLinkService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class CreateLinkController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public CreateLinkResponse create(@RequestBody @Valid CreateLinkRequest request){
+  public CreateLinkResponseDto create(@RequestBody @Valid CreateLinkRequestDto request){
     return createLinkService.create(request);
   }
 }

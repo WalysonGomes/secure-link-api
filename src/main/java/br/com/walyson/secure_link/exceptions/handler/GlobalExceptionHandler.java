@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
-import br.com.walyson.secure_link.dto.error.ApiError;
+import br.com.walyson.secure_link.dto.error.ApiErrorDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ApiError> handleGenericException(
+  public ResponseEntity<ApiErrorDto> handleGenericException(
     Exception ex,
     HttpServletRequest request
   ) {
@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
 
     HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
-    ApiError error = new ApiError(
+    ApiErrorDto error = new ApiErrorDto(
       OffsetDateTime.now(),
       status.value(),
       status.getReasonPhrase(), 
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
 
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ApiError> handleValidationException(
+  public ResponseEntity<ApiErrorDto> handleValidationException(
     MethodArgumentNotValidException ex,
     HttpServletRequest request
   ) {
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
 
     HttpStatus status = HttpStatus.BAD_REQUEST;
 
-    ApiError error = new ApiError(
+    ApiErrorDto error = new ApiErrorDto(
       OffsetDateTime.now(),
       status.value(),
       status.getReasonPhrase(), 
@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
 
 
   @ExceptionHandler(ResponseStatusException.class)
-  public ResponseEntity<ApiError> handleResponseStatusException(
+  public ResponseEntity<ApiErrorDto> handleResponseStatusException(
     ResponseStatusException ex,
     HttpServletRequest request
   ) {
@@ -83,7 +83,7 @@ public class GlobalExceptionHandler {
     ? statusEnum.getReasonPhrase()
     : "HTTP Status " + statusCode;
 
-    ApiError error = new ApiError(
+    ApiErrorDto error = new ApiErrorDto(
       OffsetDateTime.now(),
       statusCode,
       reasonPhrase,

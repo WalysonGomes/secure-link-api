@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import br.com.walyson.secure_link.domain.SecureLink;
-import br.com.walyson.secure_link.dto.CreateLinkResponse;
+import br.com.walyson.secure_link.dto.CreateLinkResponseDto;
 import br.com.walyson.secure_link.repository.SecureLinkRepository;
 import br.com.walyson.secure_link.service.impl.UploadLinkServiceImpl;
 import br.com.walyson.secure_link.utils.CodeUtils;
@@ -52,7 +52,7 @@ class UploadLinkServiceTest {
         when(fileUtils.generateFilePath(anyString())).thenReturn("/storage/unique-file-name.txt");
         when(codeUtils.generateAccessUrl("abc12345")).thenReturn("http://localhost/l/abc12345");
 
-        CreateLinkResponse response = service.upload(file, expiresAt, maxViews);
+        CreateLinkResponseDto response = service.upload(file, expiresAt, maxViews);
 
         assertNotNull(response);
         assertEquals("abc12345", response.shortCode());

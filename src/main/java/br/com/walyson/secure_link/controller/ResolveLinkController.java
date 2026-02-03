@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import br.com.walyson.secure_link.domain.enums.LinkType;
-import br.com.walyson.secure_link.dto.AccessContext;
-import br.com.walyson.secure_link.dto.ResolveResult;
+import br.com.walyson.secure_link.dto.AccessContextDto;
+import br.com.walyson.secure_link.dto.ResolveResultDto;
 import br.com.walyson.secure_link.service.ResolveLinkService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +31,12 @@ public class ResolveLinkController {
     HttpServletRequest request
   ) throws IOException {
 
-    AccessContext context = new AccessContext(
+    AccessContextDto context = new AccessContextDto(
       request.getRemoteAddr(),
       request.getHeader("User-Agent")
     );
 
-    ResolveResult result = resolveLinkService.resolve(shortCode, password, context);
+    ResolveResultDto result = resolveLinkService.resolve(shortCode, password, context);
 
 
     if (result.type() == LinkType.REDIRECT) {

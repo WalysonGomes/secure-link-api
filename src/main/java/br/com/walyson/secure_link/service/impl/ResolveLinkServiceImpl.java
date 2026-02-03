@@ -1,8 +1,8 @@
 package br.com.walyson.secure_link.service.impl;
 
 
-import br.com.walyson.secure_link.dto.AccessContext;
-import br.com.walyson.secure_link.dto.ResolveResult;
+import br.com.walyson.secure_link.dto.AccessContextDto;
+import br.com.walyson.secure_link.dto.ResolveResultDto;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -43,7 +43,7 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
 
   @Override
   @Transactional
-  public ResolveResult resolve(String shortCode, String password, AccessContext context) {
+  public ResolveResultDto resolve(String shortCode, String password, AccessContextDto context) {
 
     Timer.Sample timer = Timer.start(meterRegistry);
 
@@ -105,7 +105,7 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
       auditService.audit(shortCode, AccessResult.SUCCESS, context.ipAddress(), context.userAgent());
 
       if (link.getTargetUrl() != null && !link.getTargetUrl().isBlank()) {
-        return new ResolveResult(LinkType.REDIRECT, link.getTargetUrl(), null, null);
+        return new ResolveResultDto(LinkType.REDIRECT, link.getTargetUrl(), null, null);
       }
 
       if (link.getFilePath() == null || !Files.exists(Paths.get(link.getFilePath()))) {
@@ -114,7 +114,7 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
 
 
       Resource fileUri = fileUtils.getResource(link.getFilePath());
-      return new ResolveResult(LinkType.DOWNLOAD, null,fileUri, link.getOriginalFileName());
+      return new ResolveResultDto(LinkType.DOWNLOAD, null,fileUri, link.getOriginalFileName());
 
     } finally {
       timer.stop(
@@ -125,11 +125,11 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
     }
   }
 
-  private void handleDenied(String shortCode, AccessResult result, String reason,AccessContext context) {
+  private void handleDenied(String shortCode, AccessResult result, String reason,AccessContextDto context) {
     handleDenied(shortCode, result, reason, HttpStatus.GONE, "Link access denied", context);
   }
 
-  private void handleDenied(String shortCode, AccessResult result, String reason, HttpStatus status, String message, AccessContext context) {
+  private void handleDenied(String shortCode, AccessResult result, String reason, HttpStatus status, String message, AccessContextDto context) {
     log.warn("secure_link_resolve_denied | shortCode={} reason={}", shortCode, reason);
 
     meterRegistry.counter("secure_link_resolve_denied_total", "reason", reason)

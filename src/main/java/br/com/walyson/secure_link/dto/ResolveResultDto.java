@@ -4,7 +4,7 @@ import br.com.walyson.secure_link.domain.enums.LinkType;
 
 import org.springframework.core.io.Resource;
 
-public record ResolveResult(
+public record ResolveResultDto(
     LinkType type,
     String targetUrl,
     Resource fileUri,
