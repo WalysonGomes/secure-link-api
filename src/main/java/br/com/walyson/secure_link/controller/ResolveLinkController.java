@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.com.walyson.secure_link.domain.SecureLink;
+import br.com.walyson.secure_link.domain.enums.LinkType;
 import br.com.walyson.secure_link.service.ResolveLinkService;
 import lombok.RequiredArgsConstructor;
 

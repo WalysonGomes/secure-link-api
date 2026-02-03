@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import br.com.walyson.secure_link.domain.LinkStatus;
+import br.com.walyson.secure_link.domain.enums.LinkStatus;
 import br.com.walyson.secure_link.domain.SecureLink;
 import br.com.walyson.secure_link.repository.SecureLinkRepository;
 import br.com.walyson.secure_link.service.impl.ResolveLinkServiceImpl;

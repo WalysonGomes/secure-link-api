@@ -3,7 +3,7 @@ package br.com.walyson.secure_link.domain;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
+import br.com.walyson.secure_link.domain.enums.LinkStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
