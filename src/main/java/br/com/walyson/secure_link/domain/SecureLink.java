@@ -3,6 +3,8 @@ package br.com.walyson.secure_link.domain;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import javax.swing.text.StyledEditorKit.BoldAction;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -73,17 +75,6 @@ public class SecureLink {
     this.maxViews = maxViews;
   }
 
-  public boolean isExpired() {
-    if (expiresAt == null) {
-      return false;
-    }
-    boolean expired = OffsetDateTime.now(expiresAt.getOffset()).isAfter(expiresAt);
-    if (expired) {
-      expire();
-    }
-
-    return expired;
-  }
 
   public boolean hasReachedViewLimit() {
     return maxViews != null && viewCount >= maxViews;
@@ -96,8 +87,32 @@ public class SecureLink {
     }
   }
 
+  public boolean isActive() {
+    return this.status == LinkStatus.ACTIVE;
+  }
+
+  public boolean isExpired() {
+    if (expiresAt == null) {
+      return false;
+    }
+    boolean expired = OffsetDateTime.now(expiresAt.getOffset()).isAfter(expiresAt);
+    if (expired) {
+      expire();
+    }
+
+    return expired;
+  }
+
   public void expire() {
     this.status = LinkStatus.EXPIRED;
+  }
+
+  public boolean isRevoked(){
+    return this.status == LinkStatus.REVOKED;
+  }
+
+  public void revoke(){
+    this.status = LinkStatus.REVOKED;
   }
 
   public void protectWithPassword(String passwordHash) {

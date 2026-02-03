@@ -52,6 +52,17 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, "Link not found");
       });
 
+      if (link.isRevoked()) {
+        log.warn("secure_link_resolve_denied | shortCode={} reason=REVOKED", shortCode);
+
+        meterRegistry.counter(
+          "secure_link_resolve_denied_total",
+          "reason", "revoked"
+        ).increment();
+
+        throw new ResponseStatusException(HttpStatus.GONE, "Link revoked");
+      }
+
       if (link.isExpired()) {
         repository.save(link);
         log.warn("secure_link_resolve_denied | shortCode={} reason=EXPIRED", shortCode);
@@ -77,13 +88,17 @@ public class ResolveLinkServiceImpl implements ResolveLinkService {
         throw new ResponseStatusException(HttpStatus.GONE, "View limit reached");
       }
 
-      if (link.getStatus() != LinkStatus.ACTIVE) {
-        log.warn("secure_link_resolve_denied | shortCode={} reason=STATUS_{}", shortCode, link.getStatus());
+      if (!link.isActive()) {
+        log.warn(
+          "secure_link_resolve_denied | shortCode={} reason=STATUS_{}",
+          shortCode,
+          link.getStatus()
+        );
 
-        Counter.builder("secure_link_resolve_denied_total")
-          .tag("reason", "inactive")
-          .register(meterRegistry)
-          .increment();
+        meterRegistry.counter(
+          "secure_link_resolve_denied_total",
+          "reason", "inactive"
+        ).increment();
 
         throw new ResponseStatusException(HttpStatus.GONE, "Link is no longer active");
       }
