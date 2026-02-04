@@ -4,6 +4,8 @@ import br.com.walyson.secure_link.domain.LinkAccessAudit;
 import br.com.walyson.secure_link.repository.projection.AccessByResultProjection;
 import br.com.walyson.secure_link.repository.projection.AccessSummaryProjection;
 import br.com.walyson.secure_link.repository.projection.DailyAccessProjection;
+import br.com.walyson.secure_link.repository.projection.HourlyAccessProjection;
+import br.com.walyson.secure_link.repository.projection.SecurityExceptionProjection;
 import br.com.walyson.secure_link.repository.projection.TopLinkProjection;
 
 import java.util.List;
@@ -20,18 +22,43 @@ public interface LinkAccessAuditRepository extends JpaRepository<LinkAccessAudit
     select 
     count(a) as total, 
     sum(case when a.result = 'SUCCESS' then 1 else 0 end) as success, 
-    sum(case when a.result <> 'SUCCESS' then 1 else 0 end) as failed 
+    sum(case when a.result <> 'SUCCESS' then 1 else 0 end) as failed,
+    sum(case when a.result = 'EXPIRED' then 1 else 0 end) as expired
     from LinkAccessAudit a
     """)
   AccessSummaryProjection fetchAccessSummaryProjection();
 
+  @Query("select count(distinct a.ipAddress) from LinkAccessAudit a")
+  long countUniqueOrigins();
+
   @Query("""
-    select a.result as result, count(a) as count
+    select 
+    cast(a.accessedAt as date) as accessDate, 
+    count(a) as count
     from LinkAccessAudit a
-    where a.result <> 'SUCCESS'
-    group by a.result
+    group by cast(a.accessedAt as date)
+    order by accessDate
     """)
-  List<AccessByResultProjection> countFailuresByResult();
+  List<DailyAccessProjection> countDailyAccesses();
+
+  @Query("""
+    select 
+    hour(a.accessedAt) as hour, 
+    count(a) as count
+    from LinkAccessAudit a
+    group by hour(a.accessedAt)
+    order by hour
+    """)
+  List<HourlyAccessProjection> countHourlyAccesses();
+
+  @Query("""
+    select a.shortCode as shortCode, count(a) as count
+    from LinkAccessAudit a
+    where a.result = 'INVALID_PASSWORD'
+    group by a.shortCode
+    order by count(a) desc
+    """)
+  Page<SecurityExceptionProjection> findTopSecurityExceptions(Pageable pageable);
 
   @Query("""
     select a.shortCode as shortCode, count(a) as accessCount
@@ -43,12 +70,10 @@ public interface LinkAccessAuditRepository extends JpaRepository<LinkAccessAudit
   Page<TopLinkProjection> findTopLinks(Pageable pageable);
 
   @Query("""
-    select 
-    cast(a.accessedAt as date) as accessDate, 
-    count(a) as count
+    select a.result as result, count(a) as count
     from LinkAccessAudit a
-    group by cast(a.accessedAt as date)
-    order by accessDate
+    where a.result <> 'SUCCESS'
+    group by a.result
     """)
-  List<DailyAccessProjection> countDailyAccesses();
+  List<AccessByResultProjection> countFailuresByResult();
 }

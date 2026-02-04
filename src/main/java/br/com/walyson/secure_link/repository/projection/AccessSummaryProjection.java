@@ -4,4 +4,5 @@ public interface AccessSummaryProjection {
     Long getTotal();
     Long getSuccess();
     Long getFailed();
+    Long getExpired();
 }
