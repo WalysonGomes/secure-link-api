@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import br.com.walyson.secure_link.repository.projection.LinkStatusCountProjection;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,5 +32,13 @@ public interface SecureLinkRepository extends JpaRepository<SecureLink, UUID> {
     )
     """)
   List<SecureLink> findLinksToExpire(@Param("now") OffsetDateTime now);
+
+
+  @Query("""
+    select l.status as status, count(l) as count
+    from SecureLink l
+    group by l.status
+    """)
+  List<LinkStatusCountProjection> countLinksByStatus();
 
 }
