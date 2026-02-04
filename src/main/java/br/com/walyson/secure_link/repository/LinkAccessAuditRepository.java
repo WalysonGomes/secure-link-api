@@ -47,8 +47,8 @@ public interface LinkAccessAuditRepository extends JpaRepository<LinkAccessAudit
     cast(a.accessedAt as date) as accessDate, 
     count(a) as count
     from LinkAccessAudit a
-    group by date(a.accessedAt)
-    order by date(a.accessedAt)
+    group by cast(a.accessedAt as date)
+    order by accessDate
     """)
   List<DailyAccessProjection> countDailyAccesses();
 }
