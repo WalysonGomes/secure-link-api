@@ -25,18 +25,17 @@ public class RevokeLinkServiceImpl implements RevokeLinkService {
   public void revoke(String shortCode) {
 
     SecureLink link = repository.findByShortCode(shortCode)
-    .orElseThrow(() -> {
-      log.warn("secure_link_revoke_denied | shortCode={} reason=NOT_FOUND", shortCode);
+        .orElseThrow(() -> {
+          log.warn("secure_link_revoke_denied | shortCode={} reason=NOT_FOUND", shortCode);
 
-      meterRegistry.counter(
-        "secure_link_revoke_denied_total",
-        "reason", "not_found"
-      ).increment();
+          meterRegistry.counter(
+              "secure_link_revoke_denied_total",
+              "reason", "not_found").increment();
 
-      return new ResponseStatusException(HttpStatus.NOT_FOUND, "Link not found");
-    });
+          return new ResponseStatusException(HttpStatus.NOT_FOUND, "Link not found");
+        });
 
-    if (link.isRevoked()){
+    if (link.isRevoked()) {
       log.info("secure_link_revoke_ignored | shortCode={} reason=ALREADY_REVOKED", shortCode);
       return;
     }
@@ -49,6 +48,5 @@ public class RevokeLinkServiceImpl implements RevokeLinkService {
     meterRegistry.counter("secure_link_revoked_total").increment();
 
   }
-
 
 }

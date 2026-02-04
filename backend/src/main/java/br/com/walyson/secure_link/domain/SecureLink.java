@@ -42,7 +42,7 @@ public class SecureLink {
   private OffsetDateTime expiresAt;
 
   @Column(name = "max_views")
-  private Integer maxViews; 
+  private Integer maxViews;
 
   @Column(name = "view_count", nullable = false)
   private Integer viewCount = 0;
@@ -60,7 +60,8 @@ public class SecureLink {
   @Column(name = "created_at", nullable = false)
   private OffsetDateTime createdAt = OffsetDateTime.now();
 
-  public SecureLink(String shortCode, String filePath, String originalFileName, OffsetDateTime expiresAt, Integer maxViews) {
+  public SecureLink(String shortCode, String filePath, String originalFileName, OffsetDateTime expiresAt,
+      Integer maxViews) {
     this.shortCode = shortCode;
     this.filePath = filePath;
     this.originalFileName = originalFileName;
@@ -74,7 +75,6 @@ public class SecureLink {
     this.expiresAt = expiresAt;
     this.maxViews = maxViews;
   }
-
 
   public boolean hasReachedViewLimit() {
     return maxViews != null && viewCount >= maxViews;
@@ -107,11 +107,11 @@ public class SecureLink {
     this.status = LinkStatus.EXPIRED;
   }
 
-  public boolean isRevoked(){
+  public boolean isRevoked() {
     return this.status == LinkStatus.REVOKED;
   }
 
-  public void revoke(){
+  public void revoke() {
     this.status = LinkStatus.REVOKED;
   }
 
