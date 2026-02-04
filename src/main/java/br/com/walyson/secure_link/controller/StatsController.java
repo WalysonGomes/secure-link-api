@@ -14,11 +14,12 @@ import br.com.walyson.secure_link.domain.enums.LinkStatus;
 import br.com.walyson.secure_link.dto.stats.AccessByResultDto;
 import br.com.walyson.secure_link.dto.stats.AccessSummaryDto;
 import br.com.walyson.secure_link.dto.stats.DailyAccessDto;
+import br.com.walyson.secure_link.dto.stats.HourlyAccessDto;
 import br.com.walyson.secure_link.dto.stats.LinkStatusStatsDto;
+import br.com.walyson.secure_link.dto.stats.SecurityExceptionDto;
 import br.com.walyson.secure_link.dto.stats.TopLinkDto;
 import br.com.walyson.secure_link.repository.LinkAccessAuditRepository;
 import br.com.walyson.secure_link.repository.SecureLinkRepository;
-import br.com.walyson.secure_link.repository.projection.AccessSummaryProjection;
 import br.com.walyson.secure_link.repository.projection.LinkStatusCountProjection;
 import lombok.RequiredArgsConstructor;
 
@@ -31,12 +32,30 @@ public class StatsController {
 
   @GetMapping("/access/summary")
   public AccessSummaryDto summary() {
-    AccessSummaryProjection projection = repository.fetchAccessSummaryProjection();
+    var projection = repository.fetchAccessSummaryProjection();
+    long uniqueOrigins = repository.countUniqueOrigins();
+
     return new AccessSummaryDto(
       projection.getTotal(), 
       projection.getSuccess(), 
-      projection.getFailed()
+      projection.getFailed(),
+      projection.getExpired(),
+      uniqueOrigins
     );
+  }
+
+  @GetMapping("/access/hourly")
+  public List<HourlyAccessDto> hourly() {
+    return repository.countHourlyAccesses().stream()
+    .map(p -> new HourlyAccessDto(p.getHour(), p.getCount()))
+    .toList();
+  }
+
+  @GetMapping("/security/exceptions")
+  public List<SecurityExceptionDto> securityExceptions(@RequestParam(defaultValue = "5") int limit) {
+    return repository.findTopSecurityExceptions(PageRequest.of(0, limit)).getContent().stream()
+    .map(p -> new SecurityExceptionDto(p.getShortCode(), p.getCount()))
+    .toList();
   }
 
   @GetMapping("/access/failures")
@@ -72,7 +91,7 @@ public class StatsController {
       counts.getOrDefault(LinkStatus.REVOKED, 0L)
     );
   }
-  
+
   @GetMapping("/links/top")
   public List<TopLinkDto> topLinks(@RequestParam(defaultValue = "5") int limit) {
     return repository.findTopLinks(PageRequest.of(0, limit)).getContent().stream()
