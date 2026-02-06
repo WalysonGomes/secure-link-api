@@ -12,10 +12,9 @@ Permitir que um serviço ou usuário:
 - Gere links curtos e únicos
 - Encurte URLs externas
 - Defina regras de acesso:
-- data de expiração
-- número máximo de visualizações
-- proteção por senha
-
+  - data de expiração
+  - número máximo de visualizações
+  - proteção por senha
 - Revogue links manualmente
 - Audite **todas** as tentativas de acesso
 - Extraia métricas reais de uso e segurança
@@ -70,7 +69,7 @@ br.com.walyson.secure_link
  ├── infra
  ├── repository
  ├── security
- ├──service
+ ├── service
  └── utils
 
 ```
@@ -174,7 +173,6 @@ GET /l/{shortCode}
 | Senha inválida  | 401                        |
 | Sucesso         | 302 (redirect) ou download |
 
-|
 
 ## Acesso a links protegidos por senha
 
@@ -219,7 +217,7 @@ DELETE /l/{shortCode}
 
 - Revogar link inexistente → 404
 
-- Revogar link já revogado → noop
+- Revogar link já revogado → no-op
 
 ## Endpoints de Estatísticas (`/api/stats`)
 
@@ -258,7 +256,7 @@ GET /api/stats/access/hourly
 ]
 ```
 
-Exceções de segurança (senhas inválidas)
+Exceções de segurança
 
 ```http
 GET /api/stats/security/exceptions?limit=5
