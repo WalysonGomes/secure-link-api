@@ -1,58 +1,45 @@
-# Secure Link API — MVP
+# Secure Link API — v1.0.0-api
 
-API backend desenvolvida em **Java + Spring Boot** para criação e compartilhamento de links seguros, com controle de expiração e número máximo de acessos.
+API backend desenvolvida em **Java + Spring Boot** para criação, gerenciamento e auditoria de links seguros, com controle de expiração, limite de acessos, proteção por senha e métricas de uso.
 
-Este projeto foi desenvolvido com foco em **aprendizado prático**, arquitetura limpa e aplicação de conceitos utilizados no mercado, partindo de um **MVP bem definido** e evolutivo.
+Este projeto foi desenvolvido com foco em **aprendizado prático avançado**, arquitetura limpa, domínio rico e **observabilidade aplicada ao negócio**, partindo de um MVP e evoluindo para uma **API backend completa e pronta para consumo por um client**.
 
 ## Objetivo do Projeto
 
 Permitir que um serviço ou usuário:
 
-- Faça upload de um arquivo
-- Gere um link curto e único
-- Defina:
-  - data de expiração
-  - número máximo de visualizações
-- Compartilhe esse link
-- Garanta que o arquivo ou link:
-  - expire automaticamente
-  - seja invalidado após atingir o limite de acessos
+- Faça upload de arquivos
+- Gere links curtos e únicos
+- Encurte URLs externas
+- Defina regras de acesso:
+- data de expiração
+- número máximo de visualizações
+- proteção por senha
 
-## O que é o MVP neste projeto?
+- Revogue links manualmente
+- Audite **todas** as tentativas de acesso
+- Extraia métricas reais de uso e segurança
 
-O **MVP (Minimum Viable Product)** representa a **menor versão funcional e completa** do produto, capaz de entregar valor real e validar o fluxo principal da aplicação.
-
-### MVP inclui:
-
-- Criação de links seguros
-- Upload de arquivos via multipart
-- Criação de link encurtado para URLs externas
-- Resolução do link (`/l/{code}`)
-- Controle de:
-  - expiração
-  - número máximo de acessos
-- Persistência em banco **H2**
-- Tratamento padronizado de erros
-- Testes unitários básicos
-
-## Arquitetura Geral
+## Visão Geral da Arquitetura
 
 ```
 Controller (HTTP)
-   ↓
-Service (Regras de negócio)
-   ↓
-Repository (JPA)
-   ↓
-H2 Database
+    ↓
+Service (Regras de Negócio / Domínio)
+    ↓
+Repository (JPA + Projections)
+    ↓
+MySQL / H2
+
 ```
 
-Princípios adotados:
+### Princípios adotados
 
-- Separação clara de responsabilidades
+- Modelo de domínio rico (`SecureLink`)
 - Services pequenos e focados
-- Código orientado a domínio
-- Facilidade de evolução pós-MVP
+- Auditoria desacoplada (transação independente)
+- Métricas orientadas a produto
+- Facilidade de evolução sem quebrar contratos
 
 ## Tecnologias Utilizadas
 
@@ -60,9 +47,13 @@ Princípios adotados:
 - Spring Boot
 - Spring Web
 - Spring Data JPA
-- H2 Database (MVP)
-- Multipart File Upload
-- NanoID (geração de códigos curtos)
+- MySQL 8.4 (dev / prod)
+- H2 Database (test)
+- Flyway
+- Spring Actuator
+- Micrometer + Prometheus
+- BCrypt
+- NanoID
 - Lombok
 - Maven
 
@@ -70,193 +61,331 @@ Princípios adotados:
 
 ```
 br.com.walyson.secure_link
+ ├── config
  ├── controller
- ├── service
- ├── repository
  ├── domain
  ├── dto
- ├── utils
- ├── exception
- └── config
+ ├── exceptions
+ ├── health
+ ├── infra
+ ├── repository
+ ├── security
+ ├──service
+ └── utils
+
 ```
 
-## Fluxo Principal do MVP
+## Endpoints Principais
 
-### upload de arquivo + criação do link
+### Criação de link para URL externa
 
 **Endpoint**
 
 ```http
-POST /links/upload
+POST /api/links
+Content-Type: application/json
+
+```
+
+**Request**
+
+```json
+{
+  "targetUrl": "https://example.com",
+  "expiresAt": "2026-12-31T23:59:59Z",
+  "maxViews": 10,
+  "password": "link_password"
+}
+```
+
+**Response**
+
+```json
+{
+  "shortCode": "abc12345",
+  "accessUrl": "http://localhost:8080/l/abc12345",
+  "expiresAt": "2026-12-31T23:59:59Z",
+  "maxViews": 10
+}
+```
+
+### Upload de arquivo + criação de link
+
+**Endpoint**
+
+```http
+POST /api/links/upload
 Content-Type: multipart/form-data
+
 ```
 
 **Parâmetros**
 
 - `file` (MultipartFile) — obrigatório
-- `expiresAt` (Instant) — opcional
-- `maxViews` (Integer) — opcional
 
-**Exemplo com curl**
+- `expiresAt` — opcional
 
-```bash
-curl -X POST http://localhost:8080/links/upload \
-  -F "file=@temp/test.txt" \
-  -F "expiresAt=2026-02-01T23:59:59Z" \
-  -F "maxViews=3"
-```
+- `maxViews` — opcional
 
-**Resposta**
+- `password` — opcional
 
-```json
-{
-  "shortCode": "RTgJDgla",
-  "accessUrl": "http://localhost:8080/l/RTgJDgla",
-  "expiresAt": "2026-02-01T23:59:59Z",
-  "maxViews": 3
-}
-```
-
-### Criação de link encurtado (para URL externa)
-
-**Endpoint**
-
-```http
-POST /links/create
-Content-Type: application/json
-```
-
-**Parâmetros**
-
-```json
-{
-  "targetUrl": "https://example.com/original",
-  "expiresAt": "2026-02-01T23:59:59Z",
-  "maxViews": 3
-}
-```
-
-**Exemplo com curl**
+**Exemplo (cURL)**
 
 ```bash
-curl -X POST http://localhost:8080/links/create \
-  -H "Content-Type: application/json" \
-  -d '{"targetUrl": "https://example.com/original", "expiresAt": "2026-02-01T23:59:59Z", "maxViews": 3}'
+curl -X POST http://localhost:8080/api/links/upload \
+  -F "file=@/path/to/document.pdf" \
+  -F "maxViews=5" \
+  -F "password=secure_file"
+
 ```
 
-**Resposta**
-
-```json
-{
-  "shortCode": "aBc123XY",
-  "accessUrl": "http://localhost:8080/l/aBc123XY",
-  "expiresAt": "2026-02-01T23:59:59Z",
-  "maxViews": 3
-}
-```
-
-**Comportamento ao acessar `/l/{shortCode}`**
-
-- HTTP 302 (Found) → redireciona para `targetUrl` se definido
-- Expiração e número máximo de acessos são respeitados
-- Se o link não existe → HTTP 404
-- Se atingiu limite de visualizações → HTTP 410 (Gone)
-
-### Acesso ao link seguro (comportamento genérico)
+## Resolução do Link (`/l/{shortCode}`)
 
 **Endpoint**
 
 ```http
 GET /l/{shortCode}
+
 ```
 
-**Validações**
+### Máquina de validação aplicada
 
-- Link existe?
-- Link expirado?
-- Número máximo de visualizações atingido?
+1. Link existe?
 
-**Se for um arquivo:** retorna o conteúdo com cabeçalho `Content-Disposition`
-**Se for URL externa:** retorna 302 redirect
+2. Link foi revogado?
 
-**Exemplo curl (arquivo)**
+3. Link expirou?
+
+4. Limite de visualizações atingido?
+
+5. Senha requerida?
+
+6. Senha válida?
+
+### Comportamento
+
+| Situação        | Resposta                   |
+| --------------- | -------------------------- |
+| Link não existe | 404                        |
+| Revogado        | 410                        |
+| Expirado        | 410                        |
+| Limite atingido | 410                        |
+| Senha ausente   | 401                        |
+| Senha inválida  | 401                        |
+| Sucesso         | 302 (redirect) ou download |
+
+|
+
+## Acesso a links protegidos por senha
+
+Quando um link é criado com proteção por senha, **a senha deve ser enviada via header HTTP**.
+
+### Header esperado
+
+```
+X-Link-Password: <password>
+
+```
+
+> A senha **não deve** ser enviada via query parameters ou body da requisição.
+
+### Exemplo (cURL)
 
 ```bash
-curl -v http://localhost:8080/l/RTgJDgla
+curl -i http://localhost:8080/l/abc12345 \
+  -H "X-Link-Password: link_password"
+
 ```
 
-**Exemplo curl (URL externa)**
+## Revogação de Link
 
-```bash
-curl -v http://localhost:8080/l/aBc123XY
+Revoga manualmente um link, tornando-o imediatamente inacessível.
+
+**Endpoint**
+
+```http
+DELETE /l/{shortCode}
+
 ```
 
-## Regras de Negócio Aplicadas
+**Resposta**
 
-- Código curto **único**
-- Link inválido se:
-  - expirado
-  - número máximo de acessos atingido
-- Arquivo armazenado no filesystem (para upload)
-- Persistência desacoplada da lógica de upload
-- Possibilidade de redirecionamento para URL externa (encurtador)
+```http
+204 No Content
 
-## Padronização de Erros
+```
 
-O projeto utiliza `@ControllerAdvice` para:
+- Revogar link ativo → sucesso
 
-- Erros de validação
-- Link não encontrado
-- Link expirado
-- Limite de acessos atingido
-- Erros internos (IO, filesystem, mapping)
+- Revogar link inexistente → 404
 
-**Formato padrão**
+- Revogar link já revogado → noop
+
+## Endpoints de Estatísticas (`/api/stats`)
+
+### Resumo geral de acessos
+
+```http
+GET /api/stats/access/summary
+
+```
+
+**Response**
 
 ```json
 {
-  "timestamp": "2026-01-29T16:21:38.073Z",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Link expired",
-  "path": "/l/RTgJDgla"
+  "total": 1000,
+  "success": 850,
+  "failed": 150,
+  "expired": 40,
+  "uniqueOrigins": 320,
+  "accessEfficiencyRatio": 85.0,
+  "expirationAttritionRate": 4.0
 }
+```
+
+Distribuição horária de acessos
+
+```http
+GET /api/stats/access/hourly
+
+```
+
+```json
+[
+  { "hour": 14, "count": 150 },
+  { "hour": 15, "count": 230 }
+]
+```
+
+Exceções de segurança (senhas inválidas)
+
+```http
+GET /api/stats/security/exceptions?limit=5
+
+```
+
+```json
+[{ "shortCode": "abc12345", "count": 12 }]
+```
+
+Falhas por tipo
+
+```http
+GET /api/stats/access/failures
+
+```
+
+Acessos diários
+
+```http
+GET /api/stats/access/daily
+
+```
+
+Status dos links
+
+```http
+GET /api/stats/links
+
+```
+
+```json
+{
+  "active": 42,
+  "expired": 18,
+  "revoked": 7
+}
+```
+
+Links mais acessados
+
+```http
+GET /api/stats/links/top?limit=5
+
 ```
 
 ## Testes
 
-O MVP inclui testes unitários focados em:
+O projeto possui **testes unitários focados em regras de negócio**, cobrindo:
 
-- Services
-- Regras de negócio
-- Validação de cenários críticos
+- Criação de links
+- Upload de arquivos
+- Resolução de links (todos os estados)
+- Revogação
+- Expiração automática
+- Auditoria de acessos
+- Métricas (Micrometer)
 
-Ferramentas:
+**Ferramentas**
 
 - JUnit 5
 - Mockito
+- H2 Database (perfil `test`)
+- SimpleMeterRegistry
 
-## Configuração (application.properties para MVP)
+## Rastreabilidade e Diagnóstico
 
-```properties
-spring.datasource.url=jdbc:h2:mem:testdb
-spring.datasource.driver-class-name=org.h2.Driver
-spring.jpa.hibernate.ddl-auto=update
+O sistema implementa mecanismos avançados de observabilidade para facilitar o debug em produção:
 
-app.base-url=http://localhost:8080
-app.storage.path=/tmp/uploads/
+- **X-Correlation-Id**: Toda requisição gera ou recebe um identificador único no header da resposta . Esse ID é injetado no log (MDC), permitindo rastrear o fluxo completo de uma transação entre diferentes serviços.
+
+- **Reference ID**: Em caso de erro 500, o cliente recebe um `errorId` amigável. O desenvolvedor pode localizar o stacktrace exato no log buscando por esse ID, garantindo que detalhes sensíveis da infraestrutura nunca sejam expostos.
+
+## Padronização de Erros
+
+Todas as exceções são tratadas via `@RestControllerAdvice`.
+
+Exemplo de erro
+
+```json
+{
+  "timestamp": "2026-02-06T16:38:18.456Z",
+  "status": 500,
+  "error": "Internal Server Error",
+  "message": "An unexpected error occurred. Reference ID: 342cf159-d367-4b40-8e23-0e1a0f7f4d6d",
+  "path": "/api/stats/access/summary"
+}
 ```
 
-## Próximos Passos (Pós-MVP)
+- Erros 500 geram `errorId`
 
-- Migrar H2 → MySQL
-- Autenticação (JWT)
-- Links privados
-- Download auditado
-- Expiração automática com Scheduler
-- Rate limit
-- Frontend em Angular
-- Dockerização
-- Observabilidade (logs, métricas)
+- Stacktrace **não é exposto ao cliente**
 
-Author: Walyson Gomes
+- Logs internos mantêm rastreabilidade completa
+
+## Saúde e Telemetria
+
+A API expõe sua vitalidade operacional através do **Spring Actuator**:
+
+- **Health Check**: `GET /actuator/health`
+- Monitora: Conectividade MySQL , integridade do File System (Storage) e execução do Job de expiração.
+
+- **Métricas Prometheus**: `GET /actuator/prometheus`
+- Expõe contadores técnicos e métricas de negócio (ex: `secure_link_resolve_success_total`).
+
+## Perfis e Execução
+
+O projeto utiliza **Spring Profiles**:
+
+| Perfil | Uso                           |
+| ------ | ----------------------------- |
+| `dev`  | Desenvolvimento local (MySQL) |
+| `prod` | Produção                      |
+| `test` | Testes automatizados (H2)     |
+
+### Executar localmente
+
+```bash
+SPRING_PROFILES_ACTIVE=dev mvn spring-boot:run
+
+```
+
+## Estado Atual do Projeto
+
+- API **feature complete**
+- Backend pronto para consumo por frontend
+- Tag atual: `v1.0.0-api`
+- Próximo passo: **client (frontend)**
+
+Author: **Walyson Gomes**
