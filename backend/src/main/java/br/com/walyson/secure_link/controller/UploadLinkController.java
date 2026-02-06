@@ -1,0 +1,33 @@
+package br.com.walyson.secure_link.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import br.com.walyson.secure_link.dto.CreateLinkResponseDto;
+import br.com.walyson.secure_link.dto.LinkUploadRequestDto;
+import br.com.walyson.secure_link.service.UploadLinkService;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/links")
+@RequiredArgsConstructor
+public class UploadLinkController {
+
+  private final UploadLinkService uploadLinkService;
+
+  @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseStatus(HttpStatus.CREATED)
+  public CreateLinkResponseDto upload(@ModelAttribute LinkUploadRequestDto request) {
+
+    return uploadLinkService.upload(
+      request.file(), 
+      request.expiresAt(), 
+      request.maxViews(),
+      request.password()
+    );
+  }
+}

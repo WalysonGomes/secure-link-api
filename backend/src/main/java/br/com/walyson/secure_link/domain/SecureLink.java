@@ -1,0 +1,127 @@
+package br.com.walyson.secure_link.domain;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import br.com.walyson.secure_link.domain.enums.LinkStatus;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "secure_link")
+@Data
+@NoArgsConstructor
+public class SecureLink {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
+
+  @Column(name = "short_code", nullable = false, unique = true, length = 20)
+  private String shortCode;
+
+  @Column(name = "file_path", length = 500)
+  private String filePath;
+
+  @Column(name = "original_file_name")
+  private String originalFileName;
+
+  @Column(name = "target_url", length = 500)
+  private String targetUrl;
+
+  @Column(name = "expires_at")
+  private OffsetDateTime expiresAt;
+
+  @Column(name = "max_views")
+  private Integer maxViews;
+
+  @Column(name = "view_count", nullable = false)
+  private Integer viewCount = 0;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private LinkStatus status = LinkStatus.ACTIVE;
+
+  @Column(name = "password_hash")
+  private String passwordHash;
+
+  @Column(name = "password_protected", nullable = false)
+  private boolean passwordProtected;
+
+  @Column(name = "created_at", nullable = false)
+  private OffsetDateTime createdAt = OffsetDateTime.now();
+
+  public SecureLink(String shortCode, String filePath, String originalFileName, OffsetDateTime expiresAt,
+      Integer maxViews) {
+    this.shortCode = shortCode;
+    this.filePath = filePath;
+    this.originalFileName = originalFileName;
+    this.expiresAt = expiresAt;
+    this.maxViews = maxViews;
+  }
+
+  public SecureLink(String shortCode, String targetUrl, OffsetDateTime expiresAt, Integer maxViews) {
+    this.shortCode = shortCode;
+    this.targetUrl = targetUrl;
+    this.expiresAt = expiresAt;
+    this.maxViews = maxViews;
+  }
+
+  public boolean hasReachedViewLimit() {
+    return maxViews != null && viewCount >= maxViews;
+  }
+
+  public void incrementViewCount() {
+    this.viewCount++;
+    if (hasReachedViewLimit()) {
+      expire();
+    }
+  }
+
+  public boolean isActive() {
+    return this.status == LinkStatus.ACTIVE;
+  }
+
+  public boolean isExpired() {
+    if (expiresAt == null) {
+      return false;
+    }
+    boolean expired = OffsetDateTime.now(expiresAt.getOffset()).isAfter(expiresAt);
+    if (expired) {
+      expire();
+    }
+
+    return expired;
+  }
+
+  public void expire() {
+    this.status = LinkStatus.EXPIRED;
+  }
+
+  public boolean isRevoked() {
+    return this.status == LinkStatus.REVOKED;
+  }
+
+  public void revoke() {
+    this.status = LinkStatus.REVOKED;
+  }
+
+  public void protectWithPassword(String passwordHash) {
+    this.passwordHash = passwordHash;
+    this.passwordProtected = true;
+  }
+
+  public boolean isPasswordProtected() {
+    return passwordProtected;
+  }
+
+}
