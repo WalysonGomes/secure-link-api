@@ -1,0 +1,37 @@
+<div class="card bg-base-100 shadow-sm border border-base-200">
+  <div class="card-body gap-2">
+    <h3 class="card-title text-base">Open secure link</h3>
+    <div class="join w-full">
+      <input
+        class="input input-bordered join-item w-full"
+        placeholder="shortCode or https://.../l/shortCode"
+        [(ngModel)]="linkInput"
+      />
+      <button class="btn btn-primary join-item" (click)="open()" [disabled]="loading">
+        Open
+      </button>
+    </div>
+    @if (errorMessage) {
+      <p class="text-sm text-error">{{ errorMessage }}</p>
+    }
+  </div>
+</div>
+
+@if (passwordModalOpen) {
+  <dialog class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-semibold text-lg">Password required</h3>
+      <p class="text-sm opacity-80 mb-4">This link is protected. Enter password and retry.</p>
+      <input
+        class="input input-bordered w-full"
+        placeholder="Password"
+        type="password"
+        [(ngModel)]="password"
+      />
+      <div class="modal-action">
+        <button class="btn" (click)="passwordModalOpen = false">Cancel</button>
+        <button class="btn btn-primary" (click)="retryWithPassword()" [disabled]="loading">Retry</button>
+      </div>
+    </div>
+  </dialog>
+}

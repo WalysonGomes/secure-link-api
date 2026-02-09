@@ -1,0 +1,107 @@
+<div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
+  <section class="card bg-base-100 shadow-sm border border-base-200">
+    <div class="card-body gap-4">
+      <h1 class="card-title text-2xl">Create secure link</h1>
+
+      @if (!isFileMode()) {
+        <label class="form-control w-full">
+          <span class="label-text mb-1">Target URL</span>
+          <input
+            class="input input-bordered w-full"
+            placeholder="https://example.com/resource"
+            [(ngModel)]="targetUrl"
+            [disabled]="isFileMode()"
+          />
+        </label>
+      }
+
+      @if (!isUrlMode()) {
+        <label class="form-control w-full">
+          <span class="label-text mb-1">Upload file</span>
+          <input class="file-input file-input-bordered w-full" type="file" (change)="onFileChange($event)" />
+        </label>
+      }
+
+      @if (selectedFile) {
+        <div class="badge badge-outline">{{ selectedFile.name }}</div>
+      }
+
+      <button class="btn btn-ghost btn-sm w-fit" (click)="showAdvanced = !showAdvanced">
+        {{ showAdvanced ? 'Hide' : 'Show' }} advanced options
+      </button>
+
+      @if (showAdvanced) {
+        <div class="grid md:grid-cols-3 gap-3">
+          <label class="form-control">
+            <span class="label-text">Expires in</span>
+            <input class="input input-bordered" type="number" min="1" [(ngModel)]="durationValue" />
+          </label>
+
+          <label class="form-control">
+            <span class="label-text">Unit</span>
+            <select class="select select-bordered" [(ngModel)]="durationUnit">
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+              <option value="hours">Hours</option>
+              <option value="days">Days</option>
+            </select>
+          </label>
+
+          <label class="form-control">
+            <span class="label-text">Max views (1-100)</span>
+            <input class="input input-bordered" type="number" min="1" max="100" [(ngModel)]="maxViews" />
+          </label>
+
+          <label class="form-control md:col-span-3">
+            <span class="label-text">Password (optional)</span>
+            <input class="input input-bordered" type="password" [(ngModel)]="password" />
+          </label>
+        </div>
+      }
+
+      <button class="btn btn-primary" (click)="submit()" [disabled]="loading">
+        {{ loading ? 'Creating...' : 'Create link' }}
+      </button>
+
+      @if (feedback) {
+        <p class="text-sm text-info">{{ feedback }}</p>
+      }
+
+      @if (createdLink) {
+        <div class="bg-base-200 rounded-lg p-4 space-y-3">
+          <p class="font-medium break-all">{{ createdLink.accessUrl }}</p>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn btn-sm" (click)="copyLink()">Copy</button>
+            <a class="btn btn-sm btn-outline" [href]="createdLink.accessUrl" target="_blank" rel="noopener">Open</a>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            @if (password) {
+              <span class="badge badge-neutral">Password</span>
+            }
+            @if (createdLink.expiresAt) {
+              <span class="badge badge-outline">Expires: {{ createdLink.expiresAt }}</span>
+            }
+            @if (createdLink.maxViews) {
+              <span class="badge badge-outline">Max views: {{ createdLink.maxViews }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <aside class="space-y-4">
+    <app-open-secure-link />
+
+    <section class="card bg-base-100 shadow-sm border border-base-200">
+      <div class="card-body">
+        <h2 class="card-title text-base">Revoke link</h2>
+        <input class="input input-bordered" placeholder="shortCode" [(ngModel)]="revokeCode" />
+        <button class="btn btn-error btn-outline" (click)="revoke()">Revoke</button>
+        @if (revokeFeedback) {
+          <p class="text-sm">{{ revokeFeedback }}</p>
+        }
+      </div>
+    </section>
+  </aside>
+</div>
