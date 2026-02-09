@@ -1,0 +1,103 @@
+<section class="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 lg:grid-cols-3">
+  <div class="card bg-base-100 shadow lg:col-span-2">
+    <div class="card-body gap-4">
+      <h2 class="card-title">Create secure link</h2>
+
+      <label class="form-control" *ngIf="!hasFile()">
+        <span class="label-text mb-1">Target URL</span>
+        <input
+          class="input input-bordered"
+          placeholder="https://example.com"
+          [ngModel]="targetUrl()"
+          (ngModelChange)="onUrlChange($event)"
+        />
+      </label>
+
+      <div class="form-control" *ngIf="!hasUrl()">
+        <span class="label-text mb-1">Upload file</span>
+        <input type="file" class="file-input file-input-bordered" (change)="onFileSelected($event)" />
+        <div class="mt-1 text-sm" *ngIf="selectedFile">{{ selectedFile.name }} <button class="link" (click)="clearFile()">clear</button></div>
+      </div>
+
+      <details class="collapse collapse-arrow border border-base-300 bg-base-200">
+        <summary class="collapse-title text-sm font-medium">Advanced options</summary>
+        <div class="collapse-content grid gap-3 md:grid-cols-3">
+          <label class="form-control">
+            <span class="label-text">Expiration duration</span>
+            <input type="number" min="1" class="input input-bordered" [ngModel]="durationValue()" (ngModelChange)="durationValue.set($event ? +$event : null)" />
+          </label>
+
+          <label class="form-control">
+            <span class="label-text">Unit</span>
+            <select class="select select-bordered" [ngModel]="durationUnit()" (ngModelChange)="durationUnit.set($event)">
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+              <option value="hours">Hours</option>
+              <option value="days">Days</option>
+            </select>
+          </label>
+
+          <label class="form-control">
+            <span class="label-text">Max views (1-100)</span>
+            <input type="number" min="1" max="100" class="input input-bordered" [ngModel]="maxViews()" (ngModelChange)="maxViews.set($event ? +$event : null)" />
+          </label>
+
+          <label class="form-control md:col-span-3">
+            <span class="label-text">Password (optional)</span>
+            <input class="input input-bordered" [ngModel]="password()" (ngModelChange)="password.set($event)" />
+          </label>
+        </div>
+      </details>
+
+      <button class="btn btn-primary" [class.btn-disabled]="loading()" (click)="createLink()">
+        <span *ngIf="loading()" class="loading loading-spinner loading-xs"></span>
+        Create link
+      </button>
+
+      <div class="alert alert-error" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+
+      <div class="rounded-lg border border-base-300 p-4" *ngIf="result() as link">
+        <p class="font-medium">{{ link.accessUrl }}</p>
+        <div class="mt-2 flex gap-2">
+          <button class="btn btn-sm" (click)="copyResult(link.accessUrl)">Copy</button>
+          <button class="btn btn-sm btn-outline" (click)="openResult(link.accessUrl)">Open</button>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+          <span class="badge" *ngIf="password()">Password</span>
+          <span class="badge" *ngIf="link.expiresAt">Expires: {{ link.expiresAt | date: 'short' }}</span>
+          <span class="badge" *ngIf="link.maxViews">Max views: {{ link.maxViews }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h3 class="card-title text-base">Open secure link</h3>
+        <input class="input input-bordered" placeholder="shortCode or /l/abc123" [ngModel]="helperInput()" (ngModelChange)="helperInput.set($event)" />
+        <button class="btn btn-outline mt-2" (click)="tryOpenSecureLink()">Open</button>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h3 class="card-title text-base">Revoke link</h3>
+        <input class="input input-bordered" placeholder="shortCode" [ngModel]="revokeCode()" (ngModelChange)="revokeCode.set($event)" />
+        <button class="btn btn-error mt-2" (click)="revoke()">Revoke</button>
+        <p class="text-sm" *ngIf="revokeMessage()">{{ revokeMessage() }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<dialog class="modal" [open]="showPasswordModal()">
+  <div class="modal-box">
+    <h3 class="font-bold">Password required</h3>
+    <input class="input input-bordered mt-3 w-full" type="password" [ngModel]="helperPassword()" (ngModelChange)="helperPassword.set($event)" />
+    <div class="modal-action">
+      <button class="btn" (click)="showPasswordModal.set(false)">Cancel</button>
+      <button class="btn btn-primary" (click)="retryWithPassword()">Try</button>
+    </div>
+  </div>
+</dialog>

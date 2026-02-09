@@ -1,0 +1,50 @@
+<section class="mx-auto w-full max-w-6xl space-y-4 px-4 py-8">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-semibold">Dashboard</h2>
+    <div class="flex items-center gap-3">
+      <span class="text-sm opacity-70" *ngIf="lastUpdated()">Last updated: {{ lastUpdated() | date: 'shortTime' }}</span>
+      <button class="btn btn-sm" (click)="refresh()">
+        <span *ngIf="loading()" class="loading loading-spinner loading-xs"></span>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="grid gap-3 md:grid-cols-3" *ngIf="links() as l">
+    <div class="stat rounded-box bg-base-100 shadow"><div class="stat-title">Active</div><div class="stat-value text-primary">{{ l.active }}</div></div>
+    <div class="stat rounded-box bg-base-100 shadow"><div class="stat-title">Expired</div><div class="stat-value">{{ l.expired }}</div></div>
+    <div class="stat rounded-box bg-base-100 shadow"><div class="stat-title">Revoked</div><div class="stat-value text-error">{{ l.revoked }}</div></div>
+  </div>
+
+  <div class="grid gap-3 md:grid-cols-5" *ngIf="summary() as s">
+    <div class="stat rounded-box bg-base-100 shadow"><div class="stat-title">Total</div><div class="stat-value text-lg">{{ s.total }}</div></div>
+    <div class="stat rounded-box bg-base-100 shadow"><div class="stat-title">Success</div><div class="stat-value text-lg">{{ s.success }}</div></div>
+    <div class="stat rounded-box bg-base-100 shadow"><div class="stat-title">Failed</div><div class="stat-value text-lg">{{ s.failed }}</div></div>
+    <div class="stat rounded-box bg-base-100 shadow"><div class="stat-title">Expired</div><div class="stat-value text-lg">{{ s.expired }}</div></div>
+    <div class="stat rounded-box bg-base-100 shadow"><div class="stat-title">Unique Origins</div><div class="stat-value text-lg">{{ s.uniqueOrigins }}</div></div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2">
+    <div class="overflow-x-auto rounded-box bg-base-100 p-2 shadow">
+      <h3 class="p-2 font-medium">Hourly access</h3>
+      <table class="table table-sm"><tr><th>Hour</th><th>Count</th></tr><tr *ngFor="let i of hourly()"><td>{{ i.hour }}</td><td>{{ i.count }}</td></tr></table>
+    </div>
+    <div class="overflow-x-auto rounded-box bg-base-100 p-2 shadow">
+      <h3 class="p-2 font-medium">Daily access</h3>
+      <table class="table table-sm"><tr><th>Date</th><th>Count</th></tr><tr *ngFor="let i of daily()"><td>{{ i.accessDate }}</td><td>{{ i.count }}</td></tr></table>
+    </div>
+    <div class="overflow-x-auto rounded-box bg-base-100 p-2 shadow">
+      <h3 class="p-2 font-medium">Failures</h3>
+      <table class="table table-sm"><tr><th>Result</th><th>Count</th></tr><tr *ngFor="let i of failures()"><td>{{ i.result }}</td><td>{{ i.count }}</td></tr></table>
+    </div>
+    <div class="overflow-x-auto rounded-box bg-base-100 p-2 shadow">
+      <h3 class="p-2 font-medium">Top links</h3>
+      <table class="table table-sm"><tr><th>Short code</th><th>Accesses</th></tr><tr *ngFor="let i of topLinks()"><td>{{ i.shortCode }}</td><td>{{ i.accessCount }}</td></tr></table>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto rounded-box bg-base-100 p-2 shadow">
+    <h3 class="p-2 font-medium">Security exceptions</h3>
+    <table class="table table-sm"><tr><th>Short code</th><th>Count</th></tr><tr *ngFor="let i of security()"><td>{{ i.shortCode }}</td><td>{{ i.count }}</td></tr></table>
+  </div>
+</section>

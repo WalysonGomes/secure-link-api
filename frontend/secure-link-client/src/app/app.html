@@ -1,6 +1,16 @@
-<div class="min-h-screen flex flex-row gap-1 items-center items-center justify-center bg-gray-100">
-  <h1 class="text-3xl font-bold text-blue-600">Secure Link Client</h1>
-  <i class="ri-link text-blue-600 text-2xl"></i>
-</div>
+<div class="min-h-screen bg-base-200">
+  <nav class="navbar border-b border-base-300 bg-base-100 px-6">
+    <div class="flex-1">
+      <a routerLink="/" class="text-xl font-semibold">Secure Link</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a routerLink="/stats" routerLinkActive="btn-active" class="btn btn-ghost btn-sm">Dashboard</a>
+      <a href="https://github.com" target="_blank" rel="noreferrer" class="btn btn-ghost btn-sm">
+        <i class="ri-github-line"></i>
+        GitHub
+      </a>
+    </div>
+  </nav>
 
-<router-outlet />
+  <router-outlet />
+</div>
