@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AppError, LinkResponse } from '../../shared/models/api.models';
 import { OpenLinkResult, SecureLinkApiService } from '../../core/api/secure-link-api.service';
+import { AppError, LinkResponse } from '../../shared/models/api.models';
 
 @Component({
   selector: 'app-home',
@@ -22,6 +22,7 @@ export class HomeComponent {
   openPassword = '';
   openShortCode = '';
   showPasswordModal = false;
+  openModalMessage = '';
 
   revokeCode = '';
 
@@ -39,10 +40,17 @@ export class HomeComponent {
     return 'empty';
   }
 
+  get formReady(): boolean {
+    return this.mode === 'file' || (this.mode === 'url' && this.targetUrl.trim().length > 0);
+  }
+
   onFileChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0] ?? null;
     this.selectedFile = file;
-    if (file) this.targetUrl = '';
+    if (file) {
+      this.targetUrl = '';
+      this.errorMessage = '';
+    }
   }
 
   clearFile(): void {
@@ -56,12 +64,17 @@ export class HomeComponent {
 
     const expiresAt = this.buildExpiresAt();
     const maxViews = this.maxViews ?? undefined;
-    const password = this.password.trim() || undefined;
+    const formPassword = this.password.trim() || undefined;
 
     const request$ =
       this.mode === 'file' && this.selectedFile
-        ? this.api.uploadLink({ file: this.selectedFile, expiresAt, maxViews, password })
-        : this.api.createLink({ targetUrl: this.targetUrl.trim(), expiresAt, maxViews, password });
+        ? this.api.uploadLink({ file: this.selectedFile, expiresAt, maxViews, password: formPassword })
+        : this.api.createLink({
+            targetUrl: this.targetUrl.trim(),
+            expiresAt,
+            maxViews,
+            password: formPassword
+          });
 
     request$.subscribe({
       next: (response) => {
@@ -88,12 +101,13 @@ export class HomeComponent {
   tryOpenSecureLink(): void {
     const shortCode = this.extractShortCode(this.openLinkInput);
     if (!shortCode) {
-      this.errorMessage = 'Enter a valid shortCode or /l/{shortCode} URL.';
+      this.errorMessage = 'Use um shortCode válido ou URL no formato /l/{shortCode}.';
       return;
     }
 
     this.openShortCode = shortCode;
     this.openLoading = true;
+    this.openModalMessage = '';
     this.errorMessage = '';
 
     this.api.openLink(shortCode).subscribe({
@@ -103,17 +117,20 @@ export class HomeComponent {
       },
       error: (error: AppError) => {
         this.openLoading = false;
-        if (error.status === 401) {
+        if (error.status === 401 && this.isPasswordRequired(error.message)) {
           this.showPasswordModal = true;
+          this.openModalMessage = 'Senha obrigatória para abrir este link.';
           return;
         }
-        this.errorMessage = this.toErrorMessage(error);
+
+        this.errorMessage = this.toOpenErrorMessage(error);
       }
     });
   }
 
   retryWithPassword(): void {
     this.openLoading = true;
+    this.openModalMessage = '';
     this.errorMessage = '';
 
     this.api.openLink(this.openShortCode, this.openPassword).subscribe({
@@ -125,7 +142,14 @@ export class HomeComponent {
       },
       error: (error: AppError) => {
         this.openLoading = false;
-        this.errorMessage = this.toErrorMessage(error);
+        if (error.status === 401 && this.isInvalidPassword(error.message)) {
+          this.showPasswordModal = true;
+          this.openModalMessage = 'Senha inválida. Tente novamente.';
+          return;
+        }
+
+        this.showPasswordModal = false;
+        this.errorMessage = this.toOpenErrorMessage(error);
       }
     });
   }
@@ -133,7 +157,7 @@ export class HomeComponent {
   revoke(): void {
     const shortCode = this.extractShortCode(this.revokeCode);
     if (!shortCode) {
-      this.errorMessage = 'Enter a valid shortCode to revoke.';
+      this.errorMessage = 'Informe um shortCode válido para revogar.';
       return;
     }
 
@@ -157,14 +181,14 @@ export class HomeComponent {
     }
 
     if (!result.blob) {
-      this.errorMessage = 'Could not process file response.';
+      this.errorMessage = 'Não foi possível processar o download do arquivo.';
       return;
     }
 
     const url = URL.createObjectURL(result.blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = result.filename ?? 'download';
+    link.download = result.filename ?? 'secure-link-download';
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -191,6 +215,21 @@ export class HomeComponent {
     };
 
     return new Date(now.getTime() + this.expirationValue * multipliers[this.expirationUnit]).toISOString();
+  }
+
+  private isPasswordRequired(message: string): boolean {
+    return message.toLowerCase().includes('password required');
+  }
+
+  private isInvalidPassword(message: string): boolean {
+    return message.toLowerCase().includes('invalid password');
+  }
+
+  private toOpenErrorMessage(error: AppError): string {
+    if (error.status === 404) return 'Link não encontrado.';
+    if (error.status === 410) return 'Link expirado, revogado ou limite de visualizações atingido.';
+
+    return this.toErrorMessage(error);
   }
 
   private toErrorMessage(error: AppError): string {

@@ -5,7 +5,7 @@ import { AppError } from '../../shared/models/api.models';
 
 const messagesByStatus: Record<number, string> = {
   400: 'Invalid request. Please review the fields and try again.',
-  401: 'Password required or invalid password.',
+  401: 'Unauthorized request.',
   404: 'Resource not found.',
   410: 'Link is expired, revoked, or view limit was reached.',
   422: 'Validation failed. Please review your input.'

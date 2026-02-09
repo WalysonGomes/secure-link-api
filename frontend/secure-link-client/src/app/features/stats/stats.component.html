@@ -1,11 +1,19 @@
-<section class="space-y-6">
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-semibold">Dashboard</h1>
+<section class="space-y-6 max-w-6xl mx-auto">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-3xl font-semibold tracking-tight">Analytics dashboard</h1>
+      <p class="text-sm text-base-content/70">Métricas de acesso e saúde dos links seguros.</p>
+    </div>
     <div class="flex items-center gap-2">
       @if (lastUpdated) {
-        <span class="text-xs text-base-content/70">Updated: {{ lastUpdated | date: 'shortTime' }}</span>
+        <span class="text-xs text-base-content/70">Last updated {{ lastUpdated | date: 'shortTime' }}</span>
       }
-      <button class="btn btn-sm" [disabled]="loading" (click)="refresh()">Refresh</button>
+      <button class="btn btn-sm btn-primary" [disabled]="loading" (click)="refresh()">
+        @if (loading) {
+          <span class="loading loading-spinner loading-xs"></span>
+        }
+        Refresh
+      </button>
     </div>
   </div>
 
@@ -14,100 +22,135 @@
   }
 
   <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="stat bg-base-100 border border-base-300 rounded-box">
+    <div class="stat bg-base-100 border border-base-300 rounded-2xl shadow-sm">
       <div class="stat-title">Active links</div>
       <div class="stat-value text-primary">{{ linksStats?.active ?? '-' }}</div>
     </div>
-    <div class="stat bg-base-100 border border-base-300 rounded-box">
+    <div class="stat bg-base-100 border border-base-300 rounded-2xl shadow-sm">
       <div class="stat-title">Expired links</div>
       <div class="stat-value">{{ linksStats?.expired ?? '-' }}</div>
     </div>
-    <div class="stat bg-base-100 border border-base-300 rounded-box">
+    <div class="stat bg-base-100 border border-base-300 rounded-2xl shadow-sm">
       <div class="stat-title">Revoked links</div>
       <div class="stat-value">{{ linksStats?.revoked ?? '-' }}</div>
     </div>
-    <div class="stat bg-base-100 border border-base-300 rounded-box">
+    <div class="stat bg-base-100 border border-base-300 rounded-2xl shadow-sm">
       <div class="stat-title">Unique origins</div>
       <div class="stat-value">{{ summaryStats?.uniqueOrigins ?? '-' }}</div>
     </div>
   </div>
 
   <div class="grid sm:grid-cols-3 gap-4">
-    <div class="stat bg-base-100 border border-base-300 rounded-box"><div class="stat-title">Total access</div><div class="stat-value">{{ summaryStats?.total ?? '-' }}</div></div>
-    <div class="stat bg-base-100 border border-base-300 rounded-box"><div class="stat-title">Success</div><div class="stat-value text-success">{{ summaryStats?.success ?? '-' }}</div></div>
-    <div class="stat bg-base-100 border border-base-300 rounded-box"><div class="stat-title">Failed</div><div class="stat-value text-error">{{ summaryStats?.failed ?? '-' }}</div></div>
+    <div class="stat bg-base-100 border border-base-300 rounded-2xl shadow-sm">
+      <div class="stat-title">Total access</div>
+      <div class="stat-value">{{ summaryStats?.total ?? '-' }}</div>
+    </div>
+    <div class="stat bg-base-100 border border-base-300 rounded-2xl shadow-sm">
+      <div class="stat-title">Success</div>
+      <div class="stat-value text-success">{{ summaryStats?.success ?? '-' }}</div>
+    </div>
+    <div class="stat bg-base-100 border border-base-300 rounded-2xl shadow-sm">
+      <div class="stat-title">Failed</div>
+      <div class="stat-value text-error">{{ summaryStats?.failed ?? '-' }}</div>
+    </div>
   </div>
 
   <div class="grid lg:grid-cols-2 gap-4">
-    <div class="overflow-x-auto card bg-base-100 border border-base-300">
+    <div class="card bg-base-100 border border-base-300 rounded-2xl shadow-sm">
       <div class="card-body">
         <h2 class="card-title text-base">Access by hour</h2>
-        <table class="table table-zebra table-sm">
-          <thead><tr><th>Hour</th><th>Count</th></tr></thead>
-          <tbody>
-            @for (item of hourly; track item.hour) {
-              <tr><td>{{ item.hour }}</td><td>{{ item.count }}</td></tr>
-            }
-          </tbody>
-        </table>
+        @if (hourly.length === 0) {
+          <p class="text-sm text-base-content/60">Sem dados no momento.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="table table-zebra table-sm">
+              <thead><tr><th>Hour</th><th class="text-right">Count</th></tr></thead>
+              <tbody>
+                @for (item of hourly; track item.hour) {
+                  <tr><td>{{ item.hour }}</td><td class="text-right">{{ item.count }}</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
     </div>
 
-    <div class="overflow-x-auto card bg-base-100 border border-base-300">
+    <div class="card bg-base-100 border border-base-300 rounded-2xl shadow-sm">
       <div class="card-body">
         <h2 class="card-title text-base">Access by day</h2>
-        <table class="table table-zebra table-sm">
-          <thead><tr><th>Date</th><th>Count</th></tr></thead>
-          <tbody>
-            @for (item of daily; track item.accessDate) {
-              <tr><td>{{ item.accessDate }}</td><td>{{ item.count }}</td></tr>
-            }
-          </tbody>
-        </table>
+        @if (daily.length === 0) {
+          <p class="text-sm text-base-content/60">Sem dados no momento.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="table table-zebra table-sm">
+              <thead><tr><th>Date</th><th class="text-right">Count</th></tr></thead>
+              <tbody>
+                @for (item of daily; track item.accessDate) {
+                  <tr><td>{{ item.accessDate }}</td><td class="text-right">{{ item.count }}</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
     </div>
 
-    <div class="overflow-x-auto card bg-base-100 border border-base-300">
+    <div class="card bg-base-100 border border-base-300 rounded-2xl shadow-sm">
       <div class="card-body">
         <h2 class="card-title text-base">Failure reasons</h2>
-        <table class="table table-zebra table-sm">
-          <thead><tr><th>Result</th><th>Count</th></tr></thead>
-          <tbody>
-            @for (item of failures; track item.result) {
-              <tr><td>{{ item.result }}</td><td>{{ item.count }}</td></tr>
-            }
-          </tbody>
-        </table>
+        @if (failures.length === 0) {
+          <p class="text-sm text-base-content/60">Sem falhas registradas.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="table table-zebra table-sm">
+              <thead><tr><th>Result</th><th class="text-right">Count</th></tr></thead>
+              <tbody>
+                @for (item of failures; track item.result) {
+                  <tr><td>{{ item.result }}</td><td class="text-right">{{ item.count }}</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
     </div>
 
-    <div class="overflow-x-auto card bg-base-100 border border-base-300">
+    <div class="card bg-base-100 border border-base-300 rounded-2xl shadow-sm">
       <div class="card-body">
         <h2 class="card-title text-base">Top links</h2>
-        <table class="table table-zebra table-sm">
-          <thead><tr><th>shortCode</th><th>Access count</th></tr></thead>
-          <tbody>
-            @for (item of topLinks; track item.shortCode) {
-              <tr><td>{{ item.shortCode }}</td><td>{{ item.accessCount }}</td></tr>
-            }
-          </tbody>
-        </table>
+        @if (topLinks.length === 0) {
+          <p class="text-sm text-base-content/60">Sem dados no momento.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="table table-zebra table-sm">
+              <thead><tr><th>shortCode</th><th class="text-right">Access count</th></tr></thead>
+              <tbody>
+                @for (item of topLinks; track item.shortCode) {
+                  <tr><td>{{ item.shortCode }}</td><td class="text-right">{{ item.accessCount }}</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
     </div>
   </div>
 
   @if (securityExceptions.length > 0) {
-    <div class="overflow-x-auto card bg-base-100 border border-base-300">
+    <div class="card bg-base-100 border border-base-300 rounded-2xl shadow-sm">
       <div class="card-body">
         <h2 class="card-title text-base">Security exceptions</h2>
-        <table class="table table-zebra table-sm">
-          <thead><tr><th>shortCode</th><th>Count</th></tr></thead>
-          <tbody>
-            @for (item of securityExceptions; track item.shortCode) {
-              <tr><td>{{ item.shortCode }}</td><td>{{ item.count }}</td></tr>
-            }
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="table table-zebra table-sm">
+            <thead><tr><th>shortCode</th><th class="text-right">Count</th></tr></thead>
+            <tbody>
+              @for (item of securityExceptions; track item.shortCode) {
+                <tr><td>{{ item.shortCode }}</td><td class="text-right">{{ item.count }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   }
