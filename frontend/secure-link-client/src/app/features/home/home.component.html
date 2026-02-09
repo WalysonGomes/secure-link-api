@@ -1,0 +1,152 @@
+<section class="grid gap-6 lg:grid-cols-2">
+  <div class="card bg-base-100 shadow-sm border border-base-300">
+    <div class="card-body gap-4">
+      <h2 class="card-title">Create secure link</h2>
+
+      <label class="form-control">
+        <div class="label"><span class="label-text">Target URL</span></div>
+        <input
+          class="input input-bordered"
+          placeholder="https://example.com"
+          [disabled]="mode === 'file'"
+          [(ngModel)]="targetUrl"
+        />
+      </label>
+
+      <div class="divider my-1">or</div>
+
+      <label class="form-control">
+        <div class="label"><span class="label-text">Upload file</span></div>
+        <input
+          class="file-input file-input-bordered"
+          type="file"
+          [disabled]="mode === 'url'"
+          (change)="onFileChange($event)"
+        />
+      </label>
+
+      @if (selectedFile) {
+        <div class="alert alert-info text-sm py-2">
+          <span>{{ selectedFile.name }}</span>
+          <button class="btn btn-xs btn-ghost" (click)="clearFile()">Clear</button>
+        </div>
+      }
+
+      <details class="collapse collapse-arrow border border-base-300 rounded-box">
+        <summary class="collapse-title text-sm font-medium">Advanced options</summary>
+        <div class="collapse-content grid gap-3">
+          <div class="grid grid-cols-3 gap-2">
+            <input
+              class="input input-bordered col-span-2"
+              type="number"
+              min="1"
+              placeholder="Expiration value"
+              [(ngModel)]="expirationValue"
+            />
+            <select class="select select-bordered" [(ngModel)]="expirationUnit">
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+              <option value="hours">Hours</option>
+              <option value="days">Days</option>
+            </select>
+          </div>
+
+          <input
+            class="input input-bordered"
+            type="number"
+            min="1"
+            max="100"
+            placeholder="Max views (1-100, empty = unlimited)"
+            [(ngModel)]="maxViews"
+          />
+
+          <input
+            class="input input-bordered"
+            type="password"
+            placeholder="Password (optional)"
+            [(ngModel)]="password"
+          />
+        </div>
+      </details>
+
+      <button class="btn btn-primary" [disabled]="loading || mode === 'empty'" (click)="submit()">
+        @if (loading) {
+          <span class="loading loading-spinner loading-xs"></span>
+        }
+        Generate link
+      </button>
+
+      @if (createdLink) {
+        <div class="card bg-base-200 border border-base-300">
+          <div class="card-body gap-3">
+            <div class="font-medium text-sm break-all">{{ createdLink.accessUrl }}</div>
+            <div class="flex gap-2">
+              <button class="btn btn-sm" (click)="copyAccessUrl()">Copy</button>
+              <button class="btn btn-sm btn-outline" (click)="openAccessUrl()">Open</button>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              @if (password.trim()) {
+                <span class="badge badge-warning">Password</span>
+              }
+              @if (createdLink.expiresAt) {
+                <span class="badge badge-neutral">Expires: {{ createdLink.expiresAt }}</span>
+              }
+              @if (createdLink.maxViews) {
+                <span class="badge badge-info">Max views: {{ createdLink.maxViews }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="grid gap-6 content-start">
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+      <div class="card-body gap-3">
+        <h2 class="card-title">Open secure link</h2>
+        <input
+          class="input input-bordered"
+          placeholder="shortCode or https://.../l/shortCode"
+          [(ngModel)]="openLinkInput"
+        />
+        <button class="btn btn-outline" [disabled]="openLoading" (click)="tryOpenSecureLink()">
+          Open
+        </button>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+      <div class="card-body gap-3">
+        <h2 class="card-title">Revoke link</h2>
+        <input class="input input-bordered" placeholder="shortCode" [(ngModel)]="revokeCode" />
+        <button class="btn btn-error btn-outline" (click)="revoke()">Revoke</button>
+      </div>
+    </div>
+
+    @if (errorMessage) {
+      <div class="alert alert-error text-sm">{{ errorMessage }}</div>
+    }
+  </div>
+</section>
+
+@if (showPasswordModal) {
+  <dialog class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Password required</h3>
+      <p class="py-2 text-sm">This secure link requires a password.</p>
+      <input
+        class="input input-bordered w-full"
+        type="password"
+        placeholder="Enter password"
+        [(ngModel)]="openPassword"
+      />
+      <div class="modal-action">
+        <button class="btn" (click)="showPasswordModal = false">Cancel</button>
+        <button class="btn btn-primary" [disabled]="openLoading || !openPassword" (click)="retryWithPassword()">
+          Try again
+        </button>
+      </div>
+    </div>
+  </dialog>
+}
