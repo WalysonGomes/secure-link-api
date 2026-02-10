@@ -50,7 +50,7 @@
     <div class="min-h-[360px] p-6 md:p-8">
       @if (activeTab() === 'create') {
         <div class="animate-in fade-in slide-in-from-left-4 space-y-4 duration-300">
-          @if (createInputMode() !== 'file') {
+          @if (getCreateInputMode() !== 'file') {
             <div class="space-y-1.5">
               <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">URL de destino</label>
               <div class="relative">
@@ -63,16 +63,16 @@
             </div>
           }
 
-          @if (createInputMode() === 'empty') {
+          @if (getCreateInputMode() === 'empty') {
             <div class="relative flex items-center justify-center py-0.5">
               <div class="flex w-full items-center gap-2"><span class="h-px flex-1 bg-zinc-200/90 dark:bg-white/10"></span><span class="px-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400">ou</span><span class="h-px flex-1 bg-zinc-200/90 dark:bg-white/10"></span></div>
             </div>
           }
 
-          @if (createInputMode() !== 'url') {
+          @if (getCreateInputMode() !== 'url') {
             <div class="space-y-1.5">
               <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">Arquivo</label>
-              <label class="flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-zinc-50/80 transition-all dark:bg-black/20"
+              <label class="relative flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-zinc-50/80 transition-all dark:bg-black/20"
                 [class.border-indigo-500]="isDragOver()"
                 [class.bg-indigo-500/10]="isDragOver()"
                 [class.border-zinc-300]="!isDragOver()"
@@ -84,9 +84,11 @@
                   <span class="mt-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">Arraste e solte ou clique para buscar</span>
                   <input type="file" class="hidden" (change)="onFileSelected($event)" />
                 } @else {
+                  <button class="btn btn-ghost btn-xs absolute right-2 top-2" type="button" (click)="clearFile()" aria-label="Remover arquivo">
+                    <i class="ri-close-line text-base"></i>
+                  </button>
                   <i class="ri-file-text-fill text-3xl text-indigo-500"></i>
                   <span class="mt-2 max-w-[90%] truncate text-xs font-semibold">{{ chosenFile()?.name }}</span>
-                  <button class="btn btn-ghost btn-xs mt-2" type="button" (click)="clearFile()">Remover</button>
                 }
               </label>
             </div>
@@ -101,7 +103,7 @@
               <div class="space-y-1">
                 <label class="text-[10px] font-bold uppercase text-zinc-500">Expiração</label>
                 <div class="flex h-9 overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-white/10 dark:bg-black/40">
-                  <input type="number" [formControl]="form.controls.durationValue" class="w-full bg-transparent px-3 text-xs focus:outline-none" />
+                  <input type="text" inputmode="numeric" [formControl]="form.controls.durationValue" (input)="sanitizeNumberField('durationValue', $event)" class="w-full bg-transparent px-3 text-xs focus:outline-none" />
                   <select [formControl]="form.controls.durationUnit" class="cursor-pointer border-l border-zinc-200 bg-zinc-50 px-2 text-[10px] font-bold uppercase dark:border-white/10 dark:bg-white/5">
                     @for (unit of durationUnits; track unit) {
                       <option [value]="unit">{{ unit }}</option>
@@ -111,7 +113,7 @@
               </div>
               <div class="space-y-1">
                 <label class="text-[10px] font-bold uppercase text-zinc-500">Max views</label>
-                <input type="number" [formControl]="form.controls.maxViews" class="h-9 w-full rounded-lg border border-zinc-200 bg-white px-3 text-xs focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/40" placeholder="∞" min="1" max="100" />
+                <input type="text" inputmode="numeric" [formControl]="form.controls.maxViews" (input)="sanitizeNumberField('maxViews', $event)" class="h-9 w-full rounded-lg border border-zinc-200 bg-white px-3 text-xs focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/40" placeholder="∞" />
               </div>
               <div class="col-span-2 space-y-1">
                 <label class="text-[10px] font-bold uppercase text-zinc-500">Senha (opcional)</label>
@@ -125,7 +127,7 @@
 
           <button class="btn h-11 min-h-0 w-full border-none bg-indigo-600 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-500 disabled:opacity-60" type="button" [disabled]="isSubmitDisabled()" (click)="submit()">
             <span class="loading loading-spinner loading-xs" [class.hidden]="!isSubmitting()"></span>
-            {{ createInputMode() === 'file' ? 'Gerar Link' : 'Encurtar URL' }}
+            {{ getCreateInputMode() === 'file' ? 'Gerar Link' : 'Encurtar URL' }}
           </button>
 
           @if (apiError()) {

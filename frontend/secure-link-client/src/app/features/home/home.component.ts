@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { LinksApiService } from '../../core/api/links-api.service';
@@ -8,7 +8,6 @@ import { ApiError, LinkResponse } from '../../shared/models/api.models';
 
 type DurationUnit = 'seconds' | 'minutes' | 'hours' | 'days';
 type ActiveTab = 'create' | 'open' | 'revoke';
-
 type CreateInputMode = 'empty' | 'url' | 'file';
 
 @Component({
@@ -51,7 +50,7 @@ export class HomeComponent {
   readonly passwordForm = this.fb.nonNullable.group({ password: ['', [Validators.required]] });
   readonly revokeForm = this.fb.nonNullable.group({ shortCode: [''] });
 
-  readonly createInputMode = computed<CreateInputMode>(() => {
+  getCreateInputMode(): CreateInputMode {
     if (this.form.controls.targetUrl.value.trim()) {
       return 'url';
     }
@@ -61,17 +60,13 @@ export class HomeComponent {
     }
 
     return 'empty';
-  });
+  }
 
-  readonly isSubmitDisabled = computed(
-    () =>
-      this.isSubmitting() ||
-      (this.createInputMode() === 'url'
-        ? this.form.controls.targetUrl.invalid
-        : this.createInputMode() === 'file'
-          ? !this.chosenFile()
-          : true)
-  );
+  isSubmitDisabled(): boolean {
+    const mode = this.getCreateInputMode();
+
+    return this.isSubmitting() || (mode === 'url' ? this.form.controls.targetUrl.invalid : mode === 'file' ? !this.chosenFile() : true);
+  }
 
   setActiveTab(tab: ActiveTab): void {
     this.activeTab.set(tab);
@@ -89,6 +84,27 @@ export class HomeComponent {
     if (this.form.controls.targetUrl.value.trim()) {
       this.chosenFile.set(null);
     }
+  }
+
+  sanitizeNumberField(field: 'durationValue' | 'maxViews', event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D+/g, '');
+
+    if (field === 'maxViews' && digits === '') {
+      this.form.controls.maxViews.setValue(null);
+      input.value = '';
+      return;
+    }
+
+    const value = digits === '' ? '' : String(Number(digits));
+    input.value = value;
+
+    if (field === 'durationValue') {
+      this.form.controls.durationValue.setValue(value === '' ? 1 : Number(value));
+      return;
+    }
+
+    this.form.controls.maxViews.setValue(value === '' ? null : Number(value));
   }
 
   onDragOver(event: DragEvent): void {
@@ -133,7 +149,7 @@ export class HomeComponent {
     const password = this.form.controls.password.value.trim() || undefined;
 
     const request$ =
-      this.createInputMode() === 'url'
+      this.getCreateInputMode() === 'url'
         ? this.linksApi.createLink({
             targetUrl: this.form.controls.targetUrl.value.trim(),
             expiresAt,
