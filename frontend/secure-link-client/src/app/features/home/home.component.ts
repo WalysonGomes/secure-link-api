@@ -35,6 +35,9 @@ export class HomeComponent {
   readonly passwordModalOpen = signal(false);
   readonly passwordRetryError = signal('');
 
+  readonly showCreatePassword = signal(false);
+  readonly showRetryPassword = signal(false);
+
   readonly revokeLoading = signal(false);
   readonly revokeFeedback = signal<{ kind: 'success' | 'error'; message: string } | null>(null);
 
@@ -231,6 +234,7 @@ export class HomeComponent {
           this.passwordModalOpen.set(false);
           this.passwordForm.reset();
           this.passwordRetryError.set('');
+          this.showRetryPassword.set(false);
           window.open(`/l/${shortCode}`, '_blank', 'noopener');
         },
         error: (error: ApiError) => {
@@ -245,10 +249,30 @@ export class HomeComponent {
       });
   }
 
+
+  startRevealPassword(field: 'create' | 'retry'): void {
+    if (field === 'create') {
+      this.showCreatePassword.set(true);
+      return;
+    }
+
+    this.showRetryPassword.set(true);
+  }
+
+  stopRevealPassword(field: 'create' | 'retry'): void {
+    if (field === 'create') {
+      this.showCreatePassword.set(false);
+      return;
+    }
+
+    this.showRetryPassword.set(false);
+  }
+
   closePasswordModal(): void {
     this.passwordModalOpen.set(false);
     this.passwordRetryError.set('');
     this.passwordForm.reset();
+    this.showRetryPassword.set(false);
   }
 
   revoke(): void {
