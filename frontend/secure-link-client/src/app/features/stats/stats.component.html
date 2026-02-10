@@ -1,0 +1,120 @@
+<section class="w-full animate-in fade-in zoom-in-95 duration-300">
+  <div class="mb-8 flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Dashboard</h2>
+      <p class="text-xs text-zinc-500 dark:text-zinc-400">Visão geral do sistema em tempo real.</p>
+    </div>
+    <button (click)="refresh()" [disabled]="isLoading()" class="btn btn-sm h-9 gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-600 shadow-sm transition hover:border-indigo-500 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300">
+      <i class="ri-refresh-line" [class.animate-spin]="isLoading()"></i> Refresh
+    </button>
+  </div>
+
+  @if (updatedAt()) {
+    <p class="mb-4 text-right text-[11px] text-zinc-500 dark:text-zinc-400">Atualizado às {{ updatedAt() | date: 'shortTime' }}</p>
+  }
+
+  @if (error()) {
+    <div class="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">{{ error() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+      @for (_item of skeletonItems; track $index) {
+        <div class="rounded-2xl border border-zinc-200 bg-white/70 p-5 dark:border-white/10 dark:bg-zinc-900/40">
+          <div class="skeleton h-3 w-20"></div>
+          <div class="skeleton mt-3 h-8 w-24"></div>
+        </div>
+      }
+    </div>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border border-zinc-200 bg-white/70 p-5 dark:border-white/10 dark:bg-zinc-900/40"><div class="skeleton h-44 w-full"></div></div>
+      <div class="rounded-2xl border border-zinc-200 bg-white/70 p-5 dark:border-white/10 dark:bg-zinc-900/40"><div class="skeleton h-44 w-full"></div></div>
+    </div>
+  } @else {
+    <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total</span>
+        <i class="ri-bar-chart-fill absolute right-4 top-4 text-lg text-zinc-400"></i>
+        <p class="mt-2 text-3xl font-black tracking-tight">{{ summaryStats()?.total ?? 0 }}</p>
+      </div>
+      <div class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Ativos</span>
+        <i class="ri-wifi-line absolute right-4 top-4 text-lg text-emerald-500"></i>
+        <p class="mt-2 text-3xl font-black tracking-tight text-emerald-500">{{ linksStats()?.active ?? 0 }}</p>
+      </div>
+      <div class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Sucesso</span>
+        <i class="ri-check-line absolute right-4 top-4 text-lg text-blue-500"></i>
+        <p class="mt-2 text-3xl font-black tracking-tight text-blue-500">{{ summaryStats()?.success ?? 0 }}</p>
+      </div>
+      <div class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Falhas</span>
+        <i class="ri-error-warning-line absolute right-4 top-4 text-lg text-red-500"></i>
+        <p class="mt-2 text-3xl font-black tracking-tight text-red-500">{{ summaryStats()?.failed ?? 0 }}</p>
+      </div>
+    </div>
+
+    <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border border-zinc-200 bg-white/70 p-5 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Volume por hora</h3>
+        @if (hourly().length === 0) {
+          <div class="py-8 text-center text-zinc-500 dark:text-zinc-400"><i class="ri-bar-chart-grouped-line text-4xl"></i><p class="mt-2 text-sm">Ainda não há tráfego para exibir.</p></div>
+        } @else {
+          <div class="space-y-2">
+            @for (item of hourly(); track item.hour) {
+              <div>
+                <div class="mb-1 flex justify-between text-xs"><span>{{ item.hour }}h</span><span>{{ item.count }}</span></div>
+                <progress class="progress progress-primary w-full" [value]="item.count" [max]="maxHourly()"></progress>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="rounded-2xl border border-zinc-200 bg-white/70 p-5 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Volume por dia</h3>
+        @if (daily().length === 0) {
+          <div class="py-8 text-center text-zinc-500 dark:text-zinc-400"><i class="ri-calendar-check-line text-4xl"></i><p class="mt-2 text-sm">Sem histórico diário no momento.</p></div>
+        } @else {
+          <div class="space-y-2">
+            @for (item of daily(); track item.accessDate) {
+              <div>
+                <div class="mb-1 flex justify-between text-xs"><span>{{ item.accessDate }}</span><span>{{ item.count }}</span></div>
+                <progress class="progress progress-secondary w-full" [value]="item.count" [max]="maxDaily()"></progress>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Top Links</h3></div>
+        <app-data-table [columns]="['Código', 'Visitas']" [rows]="toTopRows()" emptyIcon="ri-medal-line" />
+      </div>
+
+      <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Falhas</h3></div>
+        <app-data-table [columns]="['Motivo', 'Count']" [rows]="toFailureRows()" emptyIcon="ri-error-warning-line" />
+      </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Acessos por hora</h3></div>
+        <app-data-table [columns]="['Hora', 'Count']" [rows]="toHourlyRows()" emptyIcon="ri-time-line" />
+      </div>
+
+      <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Acessos por dia</h3></div>
+        <app-data-table [columns]="['Data', 'Count']" [rows]="toDailyRows()" emptyIcon="ri-calendar-line" />
+      </div>
+    </div>
+
+    <div class="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+      <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Security Exceptions</h3></div>
+      <app-data-table [columns]="['Short code', 'Exceptions']" [rows]="toSecurityRows()" emptyIcon="ri-shield-flash-line" emptyTitle="Nenhuma exceção de segurança registrada" emptyMessage="Seu ambiente está estável no momento." />
+    </div>
+  }
+</section>

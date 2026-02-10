@@ -1,6 +1,50 @@
-<div class="min-h-screen flex flex-row gap-1 items-center items-center justify-center bg-gray-100">
-  <h1 class="text-3xl font-bold text-blue-600">Secure Link Client</h1>
-  <i class="ri-link text-blue-600 text-2xl"></i>
-</div>
+<div class="min-h-screen overflow-x-hidden bg-zinc-50 text-zinc-900 antialiased transition-colors duration-500 dark:bg-zinc-950 dark:text-zinc-100">
+  <div class="pointer-events-none fixed -left-24 -top-24 h-[420px] w-[420px] rounded-full bg-indigo-500/15 blur-[120px] dark:opacity-40"></div>
+  <div class="pointer-events-none fixed -bottom-24 -right-24 h-[420px] w-[420px] rounded-full bg-violet-500/15 blur-[120px] dark:opacity-40"></div>
 
-<router-outlet />
+  <header class="sticky top-0 z-50 h-16 border-b border-zinc-200/70 bg-white/75 backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/70">
+    <nav class="mx-auto flex h-full w-full max-w-6xl items-center justify-between px-4">
+      <a routerLink="/" class="group flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30 transition-transform group-hover:scale-105">
+          <i class="ri-shield-keyhole-fill"></i>
+        </span>
+        <span class="text-lg font-bold tracking-tight text-zinc-800 transition-colors group-hover:text-indigo-600 dark:text-zinc-100 dark:group-hover:text-indigo-400">SecureLink</span>
+      </a>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a
+          routerLink="/stats"
+          routerLinkActive="text-indigo-600 bg-indigo-50 dark:bg-white/10 dark:text-indigo-300"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
+        >
+          <i class="ri-bar-chart-box-line mr-1"></i> Dashboard
+        </a>
+
+        <div class="hidden h-6 w-px bg-zinc-200 dark:bg-white/10 sm:block"></div>
+
+        <div class="hidden items-center gap-2 rounded-full border border-zinc-200/80 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:border-white/10 dark:text-zinc-400 md:flex">
+          <span class="inline-block h-2.5 w-2.5 rounded-full" [class.bg-emerald-500]="isApiOnline() === true" [class.bg-red-500]="isApiOnline() === false" [class.bg-amber-500]="isApiOnline() === null"></span>
+          API {{ isApiOnline() === true ? 'online' : isApiOnline() === false ? 'offline' : 'checking' }}
+        </div>
+
+        <a href="https://github.com" target="_blank" rel="noopener" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white sm:flex">
+          <i class="ri-github-fill mr-1 text-base"></i> API Docs
+        </a>
+
+        <button class="ml-1 flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-zinc-500 transition hover:border-zinc-200 hover:bg-zinc-100 hover:text-indigo-600 dark:text-zinc-400 dark:hover:border-white/10 dark:hover:bg-white/5 dark:hover:text-yellow-300" type="button" (click)="toggleTheme()">
+          <i [class]="isDarkTheme() ? 'ri-sun-fill' : 'ri-moon-fill'" class="text-lg transition-transform duration-500 active:rotate-180"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="relative z-10 mx-auto w-full max-w-6xl px-4 pb-20 pt-10">
+    <router-outlet />
+  </main>
+
+  <footer class="py-8 text-center opacity-35">
+    <p class="text-[10px] font-black uppercase tracking-[0.3em]">Secure Link v1.0</p>
+  </footer>
+
+  <app-toast-outlet />
+</div>
