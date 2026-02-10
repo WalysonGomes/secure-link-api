@@ -7,8 +7,9 @@ import { ToastService } from '../../core/services/toast.service';
 import { ApiError, LinkResponse } from '../../shared/models/api.models';
 
 type DurationUnit = 'seconds' | 'minutes' | 'hours' | 'days';
-type CreateMode = 'url' | 'file';
 type ActiveTab = 'create' | 'open' | 'revoke';
+
+type CreateInputMode = 'empty' | 'url' | 'file';
 
 @Component({
   selector: 'app-home',
@@ -23,7 +24,6 @@ export class HomeComponent {
 
   readonly durationUnits: DurationUnit[] = ['seconds', 'minutes', 'hours', 'days'];
   readonly activeTab = signal<ActiveTab>('create');
-  readonly createMode = signal<CreateMode>('url');
   readonly generatedLink = signal<LinkResponse | null>(null);
   readonly apiError = signal<ApiError | null>(null);
   readonly isSubmitting = signal(false);
@@ -40,7 +40,7 @@ export class HomeComponent {
   readonly revokeFeedback = signal<{ kind: 'success' | 'error'; message: string } | null>(null);
 
   readonly form = this.fb.nonNullable.group({
-    targetUrl: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/i)]],
+    targetUrl: ['', [Validators.pattern(/^https?:\/\/.+/i)]],
     durationValue: [30, [Validators.min(1), Validators.max(3650)]],
     durationUnit: ['minutes' as DurationUnit],
     maxViews: [null as number | null, [Validators.min(1), Validators.max(100)]],
@@ -51,10 +51,26 @@ export class HomeComponent {
   readonly passwordForm = this.fb.nonNullable.group({ password: ['', [Validators.required]] });
   readonly revokeForm = this.fb.nonNullable.group({ shortCode: [''] });
 
+  readonly createInputMode = computed<CreateInputMode>(() => {
+    if (this.form.controls.targetUrl.value.trim()) {
+      return 'url';
+    }
+
+    if (this.chosenFile()) {
+      return 'file';
+    }
+
+    return 'empty';
+  });
+
   readonly isSubmitDisabled = computed(
     () =>
       this.isSubmitting() ||
-      (this.createMode() === 'url' ? this.form.controls.targetUrl.invalid : !this.chosenFile())
+      (this.createInputMode() === 'url'
+        ? this.form.controls.targetUrl.invalid
+        : this.createInputMode() === 'file'
+          ? !this.chosenFile()
+          : true)
   );
 
   setActiveTab(tab: ActiveTab): void {
@@ -64,20 +80,15 @@ export class HomeComponent {
     this.revokeFeedback.set(null);
   }
 
-  setCreateMode(mode: CreateMode): void {
-    this.createMode.set(mode);
-    this.apiError.set(null);
-
-    if (mode === 'url') {
-      this.chosenFile.set(null);
-    } else {
-      this.form.controls.targetUrl.setValue('');
-    }
-  }
-
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.setFile(input.files?.item(0) ?? null);
+  }
+
+  onUrlChanged(): void {
+    if (this.form.controls.targetUrl.value.trim()) {
+      this.chosenFile.set(null);
+    }
   }
 
   onDragOver(event: DragEvent): void {
@@ -122,7 +133,7 @@ export class HomeComponent {
     const password = this.form.controls.password.value.trim() || undefined;
 
     const request$ =
-      this.createMode() === 'url'
+      this.createInputMode() === 'url'
         ? this.linksApi.createLink({
             targetUrl: this.form.controls.targetUrl.value.trim(),
             expiresAt,
@@ -253,7 +264,6 @@ export class HomeComponent {
   private setFile(file: File | null): void {
     this.chosenFile.set(file);
     if (file) {
-      this.createMode.set('file');
       this.form.controls.targetUrl.setValue('');
       this.toastService.show({ kind: 'info', title: 'Arquivo pronto', message: file.name }, 2500);
     }
@@ -263,6 +273,7 @@ export class HomeComponent {
     if (!value) {
       return '';
     }
+
     if (/^[A-Za-z0-9_-]{4,}$/.test(value)) {
       return value;
     }

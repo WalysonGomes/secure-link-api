@@ -50,16 +50,11 @@
     <div class="min-h-[360px] p-6 md:p-8">
       @if (activeTab() === 'create') {
         <div class="animate-in fade-in slide-in-from-left-4 space-y-6 duration-300">
-          <div role="tablist" class="tabs tabs-boxed w-full max-w-xs bg-zinc-100/80 p-1 dark:bg-white/10">
-            <a role="tab" class="tab flex-1" [class.tab-active]="createMode() === 'url'" (click)="setCreateMode('url')">URL</a>
-            <a role="tab" class="tab flex-1" [class.tab-active]="createMode() === 'file'" (click)="setCreateMode('file')">Arquivo</a>
-          </div>
-
-          @if (createMode() === 'url') {
+          @if (createInputMode() !== 'file') {
             <div class="space-y-1.5">
               <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">URL de destino</label>
               <div class="relative">
-                <input type="text" [formControl]="form.controls.targetUrl" class="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-10 text-sm shadow-sm placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-white/10 dark:bg-black/30 dark:text-white" placeholder="https://..." />
+                <input type="text" [formControl]="form.controls.targetUrl" (input)="onUrlChanged()" class="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-10 text-sm shadow-sm placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-white/10 dark:bg-black/30 dark:text-white" placeholder="https://..." />
                 <i class="ri-link-m absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
                 @if (form.controls.targetUrl.value) {
                   <button class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200" type="button" (click)="clearUrl()"><i class="ri-close-circle-fill"></i></button>
@@ -68,7 +63,13 @@
             </div>
           }
 
-          @if (createMode() === 'file') {
+          @if (createInputMode() === 'empty') {
+            <div class="relative flex items-center justify-center py-1 opacity-60">
+              <span class="bg-transparent px-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">OU</span>
+            </div>
+          }
+
+          @if (createInputMode() !== 'url') {
             <div class="space-y-1.5">
               <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">Arquivo</label>
               <label class="flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-zinc-50/80 transition-all dark:bg-black/20"
@@ -124,7 +125,7 @@
 
           <button class="btn h-11 min-h-0 w-full border-none bg-indigo-600 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-500 disabled:opacity-60" type="button" [disabled]="isSubmitDisabled()" (click)="submit()">
             <span class="loading loading-spinner loading-xs" [class.hidden]="!isSubmitting()"></span>
-            {{ createMode() === 'file' ? 'Gerar Link' : 'Encurtar URL' }}
+            {{ createInputMode() === 'file' ? 'Gerar Link' : 'Encurtar URL' }}
           </button>
 
           @if (apiError()) {

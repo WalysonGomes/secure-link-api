@@ -91,30 +91,30 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
         <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Top Links</h3></div>
-        <app-data-table [columns]="['Código', 'Visitas']" [rows]="toTopRows()" emptyIcon="ri-medal-line" />
+        <app-data-table [columns]="['Código', 'Visitas']" [rows]="toTopRows()" emptyIcon="ri-medal-line" emptyTitle="Ainda não há top links para exibir." />
       </div>
 
       <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
         <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Falhas</h3></div>
-        <app-data-table [columns]="['Motivo', 'Count']" [rows]="toFailureRows()" emptyIcon="ri-error-warning-line" />
+        <app-data-table [columns]="['Motivo', 'Count']" [rows]="toFailureRows()" emptyIcon="ri-error-warning-line" emptyTitle="Nenhuma falha registrada no momento." />
       </div>
     </div>
 
     <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
         <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Acessos por hora</h3></div>
-        <app-data-table [columns]="['Hora', 'Count']" [rows]="toHourlyRows()" emptyIcon="ri-time-line" />
+        <app-data-table [columns]="['Hora', 'Count']" [rows]="toHourlyRows()" emptyIcon="ri-time-line" emptyTitle="Sem acessos por hora no momento." />
       </div>
 
       <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
         <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Acessos por dia</h3></div>
-        <app-data-table [columns]="['Data', 'Count']" [rows]="toDailyRows()" emptyIcon="ri-calendar-line" />
+        <app-data-table [columns]="['Data', 'Count']" [rows]="toDailyRows()" emptyIcon="ri-calendar-line" emptyTitle="Sem acessos por dia no momento." />
       </div>
     </div>
 
     <div class="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
       <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Security Exceptions</h3></div>
-      <app-data-table [columns]="['Short code', 'Exceptions']" [rows]="toSecurityRows()" emptyIcon="ri-shield-flash-line" emptyTitle="Nenhuma exceção de segurança registrada" emptyMessage="Seu ambiente está estável no momento." />
+      <app-data-table [columns]="['Short code', 'Exceptions']" [rows]="toSecurityRows()" emptyIcon="ri-shield-flash-line" emptyTitle="Nenhuma exceção de segurança registrada." />
     </div>
   }
 </section>
