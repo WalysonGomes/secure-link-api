@@ -234,6 +234,19 @@ export class StatsComponent implements OnInit, OnDestroy {
     return (hour + offsetHours + 24) % 24;
   }
 
+
+  hourlyTotalCount(): number {
+    return this.orderedHourly().reduce((total, item) => total + item.count, 0);
+  }
+
+  percentageFromTotal(value: number, total: number): number {
+    if (total <= 0) {
+      return 0;
+    }
+
+    return Number(((value / total) * 100).toFixed(1));
+  }
+
   peakHourlyCount(): number {
     return Math.max(...this.orderedHourly().map((item) => item.count), 1);
   }

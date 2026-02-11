@@ -49,7 +49,7 @@ export class HomeComponent {
   readonly form = this.fb.nonNullable.group({
     targetUrl: ['', [Validators.pattern(/^https?:\/\/.+/i)]],
     durationValue: [null as number | null, [Validators.min(1), Validators.max(3650)]],
-    durationUnit: ['minutes' as DurationUnit],
+    durationUnit: ['hours' as DurationUnit],
     maxViews: [null as number | null, [Validators.min(1), Validators.max(100)]],
     password: ['']
   });
@@ -173,6 +173,18 @@ export class HomeComponent {
       this.helperForm.controls.password.setValue('');
       this.passwordRetryError.set('');
     }
+  }
+
+
+  durationUnitLabel(unit: DurationUnit): string {
+    const labels: Record<DurationUnit, string> = {
+      seconds: 'segundos',
+      minutes: 'minutos',
+      hours: 'horas',
+      days: 'dias'
+    };
+
+    return labels[unit];
   }
 
   submit(): void {
@@ -442,7 +454,7 @@ export class HomeComponent {
     this.form.reset({
       targetUrl: '',
       durationValue: null,
-      durationUnit: 'minutes',
+      durationUnit: 'hours',
       maxViews: null,
       password: ''
     });

@@ -70,10 +70,10 @@
                       <span class="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-500">pico</span>
                     }
                   </div>
-                  <span class="font-mono text-zinc-500 dark:text-zinc-300">{{ item.count }} ({{ percentageFromPeak(item.count, peakHourlyCount()) }}%)</span>
+                  <span class="font-mono text-zinc-500 dark:text-zinc-300">{{ item.count }} ({{ percentageFromTotal(item.count, hourlyTotalCount()) }}%)</span>
                 </div>
                 <div class="h-2.5 overflow-hidden rounded-full bg-zinc-200/90 dark:bg-white/10">
-                  <div class="h-full rounded-full bg-indigo-500" [style.width.%]="percentageFromPeak(item.count, peakHourlyCount())"></div>
+                  <div class="h-full rounded-full bg-indigo-500" [style.width.%]="percentageFromTotal(item.count, hourlyTotalCount())"></div>
                 </div>
               </div>
             }
@@ -96,7 +96,7 @@
                       <span class="rounded-full border border-violet-500/20 bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-500">pico</span>
                     }
                   </div>
-                  <span class="font-mono text-zinc-500 dark:text-zinc-300">{{ item.count }} ({{ percentageFromPeak(item.count, peakDailyCount()) }}%)</span>
+                  <span class="font-mono text-zinc-500 dark:text-zinc-300">{{ item.count }}</span>
                 </div>
                 <div class="h-2.5 overflow-hidden rounded-full bg-zinc-200/90 dark:bg-white/10">
                   <div class="h-full rounded-full bg-violet-500" [style.width.%]="percentageFromPeak(item.count, peakDailyCount())"></div>

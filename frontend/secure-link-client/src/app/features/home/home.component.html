@@ -104,10 +104,10 @@
               <div class="space-y-1">
                 <label class="text-[10px] font-bold uppercase text-zinc-500">Expiração</label>
                 <div class="flex h-9 overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-white/10 dark:bg-black/40">
-                  <input type="text" inputmode="numeric" [formControl]="form.controls.durationValue" (input)="sanitizeNumberField('durationValue', $event)" class="w-full bg-transparent px-3 text-xs focus:outline-none" placeholder="Padrão do backend: 24h" />
+                  <input type="text" inputmode="numeric" [formControl]="form.controls.durationValue" (input)="sanitizeNumberField('durationValue', $event)" class="w-full bg-transparent px-3 text-xs focus:outline-none" placeholder="Padrão: 24 horas" />
                   <select [formControl]="form.controls.durationUnit" class="cursor-pointer border-l border-zinc-200 bg-zinc-50 px-2 text-[10px] font-bold uppercase dark:border-white/10 dark:bg-white/5">
                     @for (unit of durationUnits; track unit) {
-                      <option [value]="unit">{{ unit }}</option>
+                      <option [value]="unit">{{ durationUnitLabel(unit) }}</option>
                     }
                   </select>
                 </div>
@@ -181,7 +181,7 @@
           <label class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
             <input
               type="checkbox"
-              class="checkbox checkbox-xs"
+              class="h-4 w-4 cursor-pointer rounded border border-zinc-300 bg-white text-indigo-600 accent-indigo-600 dark:border-white/20 dark:bg-zinc-900"
               [checked]="openPasswordOptionEnabled() || openRequiresPassword()"
               [disabled]="openRequiresPassword()"
               (change)="onOpenPasswordToggle($event)"
