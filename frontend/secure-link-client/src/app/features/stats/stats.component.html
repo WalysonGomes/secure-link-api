@@ -4,7 +4,7 @@
       <h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Dashboard</h2>
       <p class="text-xs text-zinc-500 dark:text-zinc-400">Visão geral do sistema em tempo real.</p>
     </div>
-    <div class="tooltip tooltip-left" data-tip="Atualizar dados do dashboard"><button (click)="refresh()" [disabled]="isLoading()" class="btn btn-sm h-9 gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-600 shadow-sm transition hover:border-indigo-500 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300">
+    <div class="tooltip tooltip-left inline-flex" data-tip="Atualizar dados do dashboard" tabindex="0"><button (click)="refresh()" [disabled]="isLoading()" class="btn btn-sm h-9 gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-600 shadow-sm transition hover:border-indigo-500 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300">
       <i class="ri-refresh-line" [class.animate-spin]="isLoading()"></i> Refresh
     </button></div>
   </div>
@@ -33,7 +33,7 @@
   } @else {
     <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
       <div class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
-        <span class="tooltip" data-tip="Total de acessos registrados"><span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total</span></span>
+        <span class="tooltip tooltip-bottom inline-flex" data-tip="Total de acessos registrados" tabindex="0"><span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total</span></span>
         <i class="ri-bar-chart-fill absolute right-4 top-4 text-lg text-zinc-400"></i>
         <p class="mt-2 text-3xl font-black tracking-tight">{{ summaryStats()?.total ?? 0 }}</p>
       </div>
@@ -90,7 +90,7 @@
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
-        <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Top Links <span class="tooltip" data-tip="Links mais acessados"><i class="ri-information-line text-xs"></i></span></h3></div>
+        <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Top Links <span class="tooltip tooltip-bottom inline-flex align-middle" data-tip="Links mais acessados" tabindex="0"><i class="ri-information-line text-sm"></i></span></h3></div>
         <app-data-table [columns]="['Código', 'Visitas']" [rows]="toTopRows()" emptyIcon="ri-medal-line" emptyTitle="Ainda não há top links para exibir." />
       </div>
 

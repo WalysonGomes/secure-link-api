@@ -52,7 +52,7 @@
         <div class="animate-in fade-in slide-in-from-left-4 space-y-4 duration-300">
           @if (getCreateInputMode() !== 'file') {
             <div class="space-y-1.5">
-              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">URL de destino <span class="tooltip" data-tip="Exemplo válido: https://example.com"><i class="ri-question-line text-xs"></i></span></label>
+              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">URL de destino <span class="tooltip tooltip-bottom inline-flex align-middle" data-tip="Exemplo válido: https://example.com" tabindex="0"><i class="ri-question-line text-sm"></i></span></label>
               <div class="relative">
                 <input type="text" [formControl]="form.controls.targetUrl" (input)="onUrlChanged()" class="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-10 text-sm shadow-sm placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-white/10 dark:bg-black/30 dark:text-white" placeholder="https://example.com" />
                 <i class="ri-link-m absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
@@ -71,11 +71,12 @@
 
           @if (getCreateInputMode() !== 'url') {
             <div class="space-y-1.5">
-              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">Arquivo <span class="tooltip" data-tip="Anexe um único arquivo para gerar o link seguro"><i class="ri-information-line text-xs"></i></span></label>
+              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">Arquivo <span class="tooltip tooltip-bottom inline-flex align-middle" data-tip="Anexe um único arquivo para gerar o link seguro" tabindex="0"><i class="ri-information-line text-sm"></i></span></label>
               <label class="relative flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-zinc-50/80 transition-all dark:bg-black/20"
                 [class.border-indigo-500]="isDragOver()"
                 [class.bg-indigo-500/10]="isDragOver()"
                 [class.border-zinc-300]="!isDragOver()"
+                [class.dark:border-white/20]="!isDragOver()"
                 (dragover)="onDragOver($event)"
                 (dragleave)="onDragLeave($event)"
                 (drop)="onDrop($event)">
@@ -96,7 +97,7 @@
 
           <details class="group rounded-xl border border-zinc-200/90 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.03]">
             <summary class="flex cursor-pointer list-none items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-zinc-600 transition-colors hover:text-indigo-500 dark:text-zinc-300">
-              <i class="ri-equalizer-line"></i> Configurações Avançadas <span class="tooltip" data-tip="Senha, expiração e limite de visualizações"><i class="ri-question-line text-xs"></i></span>
+              <i class="ri-equalizer-line"></i> Configurações Avançadas <span class="tooltip tooltip-bottom inline-flex align-middle" data-tip="Senha, expiração e limite de visualizações" tabindex="0"><i class="ri-question-line text-sm"></i></span>
               <i class="ri-arrow-down-s-line ml-auto transition-transform group-open:rotate-180"></i>
             </summary>
             <div class="grid grid-cols-2 gap-4 pt-3 animate-in fade-in slide-in-from-top-1">
@@ -116,7 +117,7 @@
                 <input type="text" inputmode="numeric" [formControl]="form.controls.maxViews" (input)="sanitizeNumberField('maxViews', $event)" class="h-9 w-full rounded-lg border border-zinc-200 bg-white px-3 text-xs focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/40" placeholder="∞" />
               </div>
               <div class="col-span-2 space-y-1">
-                <label class="text-[10px] font-bold uppercase text-zinc-500">Senha (opcional) <span class="tooltip" data-tip="Segure o olho para revelar a senha"><i class="ri-eye-line text-xs"></i></span></label>
+                <label class="text-[10px] font-bold uppercase text-zinc-500">Senha (opcional) <span class="tooltip tooltip-left inline-flex align-middle" data-tip="Segure o olho para revelar a senha" tabindex="0"><i class="ri-eye-line text-sm"></i></span></label>
                 <div class="relative">
                   <input [type]="showCreatePassword() ? 'text' : 'password'" [formControl]="form.controls.password" class="h-9 w-full rounded-lg border border-zinc-200 bg-white pl-8 pr-10 text-xs focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/40" placeholder="Digite uma senha" />
                   <i class="ri-lock-password-line absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400"></i>
@@ -174,7 +175,7 @@
             <h3 class="text-sm font-bold">Acessar conteúdo</h3>
             <p class="text-xs text-zinc-500 dark:text-zinc-400">Insira código curto ou URL completa para abrir link seguro.</p>
           </div>
-          <input type="text" [formControl]="helperForm.controls.resource" placeholder="Ex: abc12345 ou https://..." class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-center text-sm focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/30" />
+          <input type="text" [formControl]="helperForm.controls.resource" placeholder="Ex: abc12345 ou https://example.com/abc12345" class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-center text-sm focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/30" />
           <button class="h-11 w-full rounded-xl bg-zinc-900 text-xs font-bold uppercase tracking-[0.2em] text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200" (click)="tryOpenSecureLink()">Abrir Link</button>
           @if (openError()) {
             <p class="text-sm text-red-500">{{ openError()?.message }}</p>
@@ -189,7 +190,7 @@
             <h3 class="text-sm font-bold">Destruir acesso</h3>
             <p class="text-xs text-zinc-500 dark:text-zinc-400">Ação irreversível. O link deixará de funcionar imediatamente.</p>
           </div>
-          <input type="text" [formControl]="revokeForm.controls.shortCode" placeholder="Código do link" class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-center text-sm focus:border-red-500 focus:outline-none dark:border-white/10 dark:bg-black/30" />
+          <input type="text" [formControl]="revokeForm.controls.shortCode" placeholder="shortCode ou URL completa" class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-center text-sm focus:border-red-500 focus:outline-none dark:border-white/10 dark:bg-black/30" />
           <button class="h-11 w-full rounded-xl bg-red-500 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-red-500/30 transition hover:bg-red-600" (click)="revoke()">Revogar Permanentemente</button>
           @if (revokeFeedback()) {
             <p class="text-sm" [class.text-emerald-500]="revokeFeedback()?.kind === 'success'" [class.text-red-500]="revokeFeedback()?.kind === 'error'">{{ revokeFeedback()?.message }}</p>

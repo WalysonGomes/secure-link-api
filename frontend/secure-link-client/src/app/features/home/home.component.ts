@@ -276,8 +276,18 @@ export class HomeComponent {
   }
 
   revoke(): void {
-    const shortCode = this.revokeForm.controls.shortCode.value.trim();
-    if (!shortCode || !window.confirm(`Revoke link ${shortCode}? This cannot be undone.`)) {
+    const rawValue = this.revokeForm.controls.shortCode.value.trim();
+    const shortCode = this.extractShortCode(rawValue);
+
+    if (!shortCode) {
+      this.revokeFeedback.set({
+        kind: 'error',
+        message: 'Informe um shortCode válido ou URL completa.'
+      });
+      return;
+    }
+
+    if (!window.confirm(`Revoke link ${shortCode}? This cannot be undone.`)) {
       return;
     }
 
