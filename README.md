@@ -56,6 +56,47 @@ MySQL / H2
 - Lombok
 - Maven
 
+## Modo de uso (Backend + Frontend)
+
+### Pré-requisitos
+
+- Java 21+
+- Maven 3.9+
+- Node.js 20+
+- Yarn 1.22+
+- MySQL (para perfil `dev` do backend)
+
+### Backend
+
+```bash
+cd backend
+SPRING_PROFILES_ACTIVE=dev mvn spring-boot:run
+```
+
+Backend padrão: `http://localhost:8080`.
+
+### Frontend
+
+```bash
+cd frontend/secure-link-client
+cp .env.example .env
+```
+
+No `.env`, configure:
+
+```env
+NG_APP_API_BASE_URL=http://localhost:8080/
+```
+
+Depois execute:
+
+```bash
+yarn install
+yarn start
+```
+
+Frontend padrão: `http://localhost:4200`.
+
 ## Estrutura de Pacotes (simplificada)
 
 ```
@@ -128,15 +169,10 @@ Content-Type: multipart/form-data
 
 - `password` — opcional
 
-**Exemplo (cURL)**
+**Demonstração visual**
 
-```bash
-curl -X POST http://localhost:8080/api/links/upload \
-  -F "file=@/path/to/document.pdf" \
-  -F "maxViews=5" \
-  -F "password=secure_file"
-
-```
+- [adicione um gif aqui: upload de arquivo + criação de link]
+- [adicione uma imagem aqui: retorno de sucesso da criação de link]
 
 ## Resolução do Link (`/l/{shortCode}`)
 
@@ -187,13 +223,10 @@ X-Link-Password: <password>
 
 > A senha **não deve** ser enviada via query parameters ou body da requisição.
 
-### Exemplo (cURL)
+### Demonstração visual
 
-```bash
-curl -i http://localhost:8080/l/abc12345 \
-  -H "X-Link-Password: link_password"
-
-```
+- [adicione um gif aqui: tentativa de acesso com senha]
+- [adicione uma imagem aqui: resposta de acesso autorizado]
 
 ## Revogação de Link
 
@@ -302,6 +335,14 @@ Links mais acessados
 GET /api/stats/links/top?limit=5
 
 ```
+
+### Dashboard do Client (placeholders de mídia)
+
+- [adicione um gif aqui: visão geral do dashboard carregando os cards principais]
+- [adicione uma imagem aqui: tabela de Top Links e Falhas]
+- [adicione uma imagem aqui: gráfico/barras de Volume por hora]
+- [adicione uma imagem aqui: gráfico/barras de Volume por dia]
+- [adicione uma imagem aqui: tabela de Exceções de segurança]
 
 ## Testes
 

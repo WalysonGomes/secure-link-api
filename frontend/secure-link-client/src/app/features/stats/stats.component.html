@@ -1,0 +1,204 @@
+<section class="w-full animate-in fade-in zoom-in-95 duration-300">
+  <div class="mb-8 flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Dashboard</h2>
+      <p class="text-xs text-zinc-500 dark:text-zinc-400">Visão geral do sistema em tempo real.</p>
+    </div>
+    <button
+      (click)="refresh()"
+      [disabled]="isLoading()"
+      class="btn btn-sm h-9 gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-600 shadow-sm transition hover:border-indigo-500 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300"
+    >
+      <i class="ri-refresh-line" [class.animate-spin]="isLoading()"></i> Atualizar
+    </button>
+  </div>
+
+  @if (updatedAt()) {
+    <p class="mb-4 text-right text-[11px] text-zinc-500 dark:text-zinc-400">Atualizado às {{ updatedAt() | date: 'shortTime' }}</p>
+  }
+
+  @if (error()) {
+    <div class="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">{{ error() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+      @for (_item of skeletonItems; track $index) {
+        <div class="rounded-2xl border border-zinc-200 bg-white/70 p-5 dark:border-white/10 dark:bg-zinc-900/40">
+          <div class="skeleton h-3 w-20"></div>
+          <div class="skeleton mt-3 h-8 w-24"></div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div class="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">Total</span>
+        <i class="ri-bar-chart-fill absolute right-4 top-4 text-lg text-zinc-400"></i>
+        <p class="mt-2 text-3xl font-black tracking-tight">{{ summaryStats()?.total ?? 0 }}</p>
+      </div>
+      <div class="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">Ativos</span>
+        <i class="ri-wifi-line absolute right-4 top-4 text-lg text-emerald-500"></i>
+        <p class="mt-2 text-3xl font-black tracking-tight text-emerald-500">{{ linksStats()?.active ?? 0 }}</p>
+      </div>
+      <div class="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">Sucesso</span>
+        <i class="ri-check-line absolute right-4 top-4 text-lg text-blue-500"></i>
+        <p class="mt-2 text-3xl font-black tracking-tight text-blue-500">{{ summaryStats()?.success ?? 0 }}</p>
+      </div>
+      <div class="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">Falhas</span>
+        <i class="ri-error-warning-line absolute right-4 top-4 text-lg text-red-500"></i>
+        <p class="mt-2 text-3xl font-black tracking-tight text-red-500">{{ summaryStats()?.failed ?? 0 }}</p>
+      </div>
+    </div>
+
+    <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border border-zinc-200 bg-white/70 p-5 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <h3 class="mb-4 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">Volume por hora</h3>
+        @if (orderedHourly().length === 0) {
+          <div class="py-8 text-center text-zinc-500 dark:text-zinc-400"><i class="ri-bar-chart-grouped-line text-4xl"></i><p class="mt-2 text-sm">Ainda não há tráfego para exibir.</p></div>
+        } @else {
+          <div class="space-y-3">
+            @for (item of orderedHourly(); track item.hour) {
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium">{{ localHour(item.hour) }}h</span>
+                    @if (isHourlyPeak(item)) {
+                      <span class="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-500">pico</span>
+                    }
+                  </div>
+                  <span class="font-mono text-zinc-500 dark:text-zinc-300">{{ item.count }} ({{ percentageFromTotal(item.count, hourlyTotalCount()) }}%)</span>
+                </div>
+                <div class="h-2.5 overflow-hidden rounded-full bg-zinc-200/90 dark:bg-white/10">
+                  <div class="h-full rounded-full bg-indigo-500" [style.width.%]="percentageFromTotal(item.count, hourlyTotalCount())"></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="rounded-2xl border border-zinc-200 bg-white/70 p-5 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <h3 class="mb-4 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">Volume por dia</h3>
+        @if (orderedDaily().length === 0) {
+          <div class="py-8 text-center text-zinc-500 dark:text-zinc-400"><i class="ri-calendar-check-line text-4xl"></i><p class="mt-2 text-sm">Sem histórico diário no momento.</p></div>
+        } @else {
+          <div class="space-y-3">
+            @for (item of orderedDaily(); track item.accessDate) {
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium">{{ dailyItemLabel(item) }}</span>
+                    @if (isDailyPeak(item)) {
+                      <span class="rounded-full border border-violet-500/20 bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-500">pico</span>
+                    }
+                  </div>
+                  <span class="font-mono text-zinc-500 dark:text-zinc-300">{{ item.count }}</span>
+                </div>
+                <div class="h-2.5 overflow-hidden rounded-full bg-zinc-200/90 dark:bg-white/10">
+                  <div class="h-full rounded-full bg-violet-500" [style.width.%]="percentageFromPeak(item.count, peakDailyCount())"></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">Top links</h3></div>
+        <div class="p-4 sm:p-5">
+          <div class="overflow-x-auto rounded-xl border border-zinc-200 bg-white/45 dark:border-white/10 dark:bg-zinc-900/35">
+            <table class="w-full min-w-full text-sm">
+              <thead class="border-b border-zinc-200/80 dark:border-white/10">
+                <tr>
+                  <th class="px-4 py-3 text-left text-[10px] uppercase tracking-[0.18em] text-zinc-500">#</th>
+                  <th class="px-4 py-3 text-left text-[10px] uppercase tracking-[0.18em] text-zinc-500">Código</th>
+                  <th class="px-4 py-3 text-right text-[10px] uppercase tracking-[0.18em] text-zinc-500">Visitas</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (topLinks().length === 0) {
+                  <tr><td colspan="3" class="px-5 py-10 text-center text-sm text-zinc-500">Ainda não há top links para exibir.</td></tr>
+                } @else {
+                  @for (item of topLinks(); track item.shortCode; let i = $index) {
+                    <tr class="border-b border-zinc-200/60 last:border-b-0 hover:bg-white/60 dark:border-white/10 dark:hover:bg-white/5">
+                      <td class="px-4 py-3 text-zinc-500">{{ i + 1 }}</td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <span class="max-w-28 truncate rounded-md border border-zinc-300/70 bg-zinc-100/80 px-2 py-1 font-mono text-xs dark:border-white/15 dark:bg-white/5">{{ item.shortCode }}</span>
+                          <button type="button" class="text-zinc-400 transition hover:text-indigo-500" (click)="copyShortCode(item.shortCode)"><i class="ri-file-copy-line"></i></button>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-right"><span class="rounded-md border border-zinc-300/70 bg-zinc-100/80 px-2 py-1 font-mono text-xs dark:border-white/15 dark:bg-white/5">{{ item.accessCount }}</span></td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+        <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">Falhas</h3></div>
+        <div class="p-4 sm:p-5">
+          <div class="overflow-x-auto rounded-xl border border-zinc-200 bg-white/45 dark:border-white/10 dark:bg-zinc-900/35">
+            <table class="w-full min-w-full text-sm">
+              <thead class="border-b border-zinc-200/80 dark:border-white/10">
+                <tr>
+                  <th class="px-4 py-3 text-left text-[10px] uppercase tracking-[0.18em] text-zinc-500">Motivo</th>
+                  <th class="px-4 py-3 text-right text-[10px] uppercase tracking-[0.18em] text-zinc-500">Quantidade</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (failures().length === 0) {
+                  <tr><td colspan="2" class="px-5 py-10 text-center text-sm text-zinc-500">Nenhuma falha registrada no momento.</td></tr>
+                } @else {
+                  @for (item of failures(); track item.result) {
+                    <tr class="border-b border-zinc-200/60 last:border-b-0 hover:bg-white/60 dark:border-white/10 dark:hover:bg-white/5">
+                      <td class="px-4 py-3"><span class="rounded-md border px-2 py-1 text-xs" [class]="failureTone(item.result)">{{ translatedFailureLabel(item.result) }}</span></td>
+                      <td class="px-4 py-3 text-right"><span class="rounded-md border border-zinc-300/70 bg-zinc-100/80 px-2 py-1 font-mono text-xs dark:border-white/15 dark:bg-white/5">{{ item.count }}</span></td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/40">
+      <div class="border-b border-zinc-200 px-5 py-3 dark:border-white/10"><h3 class="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">Exceções de segurança</h3></div>
+      <div class="p-4 sm:p-5">
+        <div class="overflow-x-auto rounded-xl border border-zinc-200 bg-white/45 dark:border-white/10 dark:bg-zinc-900/35">
+          <table class="w-full min-w-full text-sm">
+            <thead class="border-b border-zinc-200/80 dark:border-white/10">
+              <tr>
+                <th class="px-4 py-3 text-left text-[10px] uppercase tracking-[0.18em] text-zinc-500">Short code</th>
+                <th class="px-4 py-3 text-right text-[10px] uppercase tracking-[0.18em] text-zinc-500">Exceções</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (securityExceptions().length === 0) {
+                <tr><td colspan="2" class="px-5 py-10 text-center text-sm text-zinc-500">Nenhuma exceção de segurança registrada.</td></tr>
+              } @else {
+                @for (item of securityExceptions(); track item.shortCode) {
+                  <tr class="border-b border-zinc-200/60 last:border-b-0 hover:bg-white/60 dark:border-white/10 dark:hover:bg-white/5">
+                    <td class="px-4 py-3"><span class="max-w-28 truncate rounded-md border border-zinc-300/70 bg-zinc-100/80 px-2 py-1 font-mono text-xs dark:border-white/15 dark:bg-white/5">{{ item.shortCode }}</span></td>
+                    <td class="px-4 py-3 text-right"><span class="rounded-md border border-zinc-300/70 bg-zinc-100/80 px-2 py-1 font-mono text-xs dark:border-white/15 dark:bg-white/5">{{ item.count }}</span></td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</section>

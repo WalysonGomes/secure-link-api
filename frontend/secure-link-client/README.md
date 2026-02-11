@@ -1,59 +1,89 @@
-# SecureLinkClient
+# Secure Link Client
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.3.
+Frontend Angular (standalone) para o Secure Link API.
 
-## Development server
+## Stack
 
-To start a local development server, run:
+- Angular + TypeScript + Angular Router + HttpClient
+- Tailwind CSS v3 + daisyUI
+- Remix Icon (CDN)
+- Yarn
 
-```bash
-ng serve
-```
+## Rodando local
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### 1) Configurar ambiente
 
 ```bash
-ng generate component component-name
+cp .env.example .env
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Edite o `.env` e ajuste a URL da API caso necessário:
+
+```env
+NG_APP_API_BASE_URL=http://localhost:8080/
+```
+
+### 2) Instalar e iniciar
 
 ```bash
-ng generate --help
+yarn install
+yarn start
 ```
 
-## Building
+Aplicação disponível em `http://localhost:4200`.
 
-To build the project run:
+## Build
 
 ```bash
-ng build
+yarn build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Configuração de API
 
-## Running unit tests
+O client lê a URL da API via variável de ambiente em tempo de build:
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+- `NG_APP_API_BASE_URL` (preferencial)
+- fallback: `API_BASE_URL`
+- fallback final: `http://localhost:8080/`
 
-```bash
-ng test
+Implementação em `src/app/core/config/api.config.ts` usando `import.meta.env`.
+
+## Funcionalidades implementadas
+
+- Home unificada com tabs (URL/Arquivo) e dropzone com drag-and-drop
+- Criação de link seguro via `POST /api/links` e upload via `POST /api/links/upload`
+- Configurações opcionais de segurança (senha, expiração, max views)
+- Card de sucesso com ações rápidas de cópia/abertura
+- Helper **Open secure link** com retry por senha (`X-Link-Password`)
+- Revogação rápida (`DELETE /l/{shortCode}`) com botão destrutivo
+- Dashboard com cards `stats`, barras de volume (hora/dia) e tabelas `/api/stats/**`
+- Refresh manual + polling leve (20s) + skeleton loading
+- Empty states ricos com ícones e mensagens orientativas
+- Interceptors:
+  - `X-Correlation-Id` em toda request
+  - normalização de erro com suporte a `errorId`
+- Toasts globais para erros de API
+- Navbar sticky com status da API e toggle de tema light/dark
+
+
+## CORS (backend)
+
+Para o fluxo de **Open secure link** com senha funcionar no ambiente local, o backend precisa permitir origem do client e expor headers usados no fluxo.
+
+Configuração atual esperada no backend (`CorsConfig`):
+
+- origins: `http://localhost:4200` e `http://127.0.0.1:4200`
+- headers permitidos: `X-Link-Password`, `X-Correlation-Id`, `Content-Type`, `Authorization`
+- headers expostos: `Location`, `Content-Disposition`, `X-Error-Id`
+
+> Observação importante: mesmo com CORS correto no backend, destinos externos (ex.: `https://google.com`) podem bloquear leitura de redirect em XHR por política do próprio domínio de destino.
+
+Se você preferir configurar CORS por `application.properties`, use equivalente a:
+
+```properties
+# Exemplo (equivalente):
+# spring.web.cors.allowed-origins=http://localhost:4200,http://127.0.0.1:4200
+# spring.web.cors.allowed-methods=GET,POST,PUT,PATCH,DELETE,OPTIONS
+# spring.web.cors.allowed-headers=Content-Type,Authorization,X-Link-Password,X-Correlation-Id
+# spring.web.cors.exposed-headers=Location,Content-Disposition,X-Error-Id
 ```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

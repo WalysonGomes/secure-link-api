@@ -1,0 +1,249 @@
+<section class="mx-auto w-full max-w-xl animate-in fade-in zoom-in-95 duration-500">
+  <div class="mb-8 space-y-2 text-center">
+    <h1 class="text-3xl font-extrabold tracking-tight md:text-4xl">
+      Compartilhe com <span class="bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">controle total</span>
+    </h1>
+    <p class="mx-auto max-w-md text-base text-zinc-500 dark:text-zinc-400">
+      Gere links seguros para redirecionamento e arquivos, com senha, expiração e revogação imediata quando necessário.
+    </p>
+  </div>
+
+  <div class="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 shadow-xl backdrop-blur-xl transition-all dark:border-white/10 dark:bg-zinc-900/60">
+    @if (isSubmitting() || openLoading() || revokeLoading()) {
+      <div class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm dark:bg-zinc-950/75">
+        <span class="loading loading-spinner loading-lg text-indigo-500"></span>
+        <span class="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-indigo-500">Processando...</span>
+      </div>
+    }
+
+    <div class="flex border-b border-zinc-200 bg-zinc-50/60 dark:border-white/10 dark:bg-black/20">
+      <button class="flex-1 border-b-2 py-4 text-xs font-bold uppercase tracking-wide transition-all"
+        [class.border-indigo-500]="activeTab() === 'create'"
+        [class.text-indigo-600]="activeTab() === 'create'"
+        [class.dark:text-indigo-400]="activeTab() === 'create'"
+        [class.border-transparent]="activeTab() !== 'create'"
+        [class.text-zinc-500]="activeTab() !== 'create'"
+        (click)="setActiveTab('create')">
+        <i class="ri-add-circle-line mr-1 text-base align-middle"></i> Criar
+      </button>
+      <button class="flex-1 border-b-2 py-4 text-xs font-bold uppercase tracking-wide transition-all"
+        [class.border-zinc-900]="activeTab() === 'open'"
+        [class.dark:border-white]="activeTab() === 'open'"
+        [class.text-zinc-900]="activeTab() === 'open'"
+        [class.dark:text-white]="activeTab() === 'open'"
+        [class.border-transparent]="activeTab() !== 'open'"
+        [class.text-zinc-500]="activeTab() !== 'open'"
+        (click)="setActiveTab('open')">
+        <i class="ri-lock-unlock-line mr-1 text-base align-middle"></i> Abrir
+      </button>
+      <button class="flex-1 border-b-2 py-4 text-xs font-bold uppercase tracking-wide transition-all"
+        [class.border-red-500]="activeTab() === 'revoke'"
+        [class.text-red-600]="activeTab() === 'revoke'"
+        [class.dark:text-red-400]="activeTab() === 'revoke'"
+        [class.border-transparent]="activeTab() !== 'revoke'"
+        [class.text-zinc-500]="activeTab() !== 'revoke'"
+        (click)="setActiveTab('revoke')">
+        <i class="ri-delete-bin-line mr-1 text-base align-middle"></i> Revogar
+      </button>
+    </div>
+
+    <div class="min-h-[360px] p-6 md:p-8">
+      @if (activeTab() === 'create') {
+        <div class="animate-in fade-in slide-in-from-left-4 space-y-4 duration-300">
+          @if (getCreateInputMode() !== 'file') {
+            <div class="space-y-1.5">
+              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">URL de destino</label>
+              <div class="relative">
+                <input type="text" [formControl]="form.controls.targetUrl" (input)="onUrlChanged()" class="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-10 text-sm shadow-sm placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-white/10 dark:bg-black/30 dark:text-white" placeholder="https://example.com" />
+                <i class="ri-link-m absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
+                @if (form.controls.targetUrl.value) {
+                  <button class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200" type="button" (click)="clearUrl()"><i class="ri-close-circle-fill"></i></button>
+                }
+              </div>
+            </div>
+          }
+
+          @if (getCreateInputMode() === 'empty') {
+            <div class="relative flex items-center justify-center py-0.5">
+              <div class="flex w-full items-center gap-2"><span class="h-px flex-1 bg-zinc-200/90 dark:bg-white/10"></span><span class="px-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400">ou</span><span class="h-px flex-1 bg-zinc-200/90 dark:bg-white/10"></span></div>
+            </div>
+          }
+
+          @if (getCreateInputMode() !== 'url') {
+            <div class="space-y-1.5">
+              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">Arquivo</label>
+              <label class="relative flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-zinc-50/80 transition-all dark:bg-black/20"
+                [class.border-indigo-500]="isDragOver()"
+                [class.bg-indigo-500/10]="isDragOver()"
+                [class.border-zinc-300]="!isDragOver()"
+                [class.dark:border-white/20]="!isDragOver()"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)">
+                @if (!chosenFile()) {
+                  <i class="ri-upload-cloud-2-line text-3xl text-zinc-400"></i>
+                  <span class="mt-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">Arraste e solte ou clique para buscar</span>
+                  <input type="file" class="hidden" (change)="onFileSelected($event)" />
+                } @else {
+                  <button class="btn btn-ghost btn-xs absolute right-2 top-2" type="button" (click)="clearFile()" aria-label="Remover arquivo">
+                    <i class="ri-close-line text-base"></i>
+                  </button>
+                  <i class="ri-file-text-fill text-3xl text-indigo-500"></i>
+                  <span class="mt-2 max-w-[90%] truncate text-xs font-semibold">{{ chosenFile()?.name }}</span>
+                }
+              </label>
+            </div>
+          }
+
+          <details class="group rounded-xl border border-zinc-200/90 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.03]">
+            <summary class="flex cursor-pointer list-none items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-zinc-600 transition-colors hover:text-indigo-500 dark:text-zinc-300">
+              <i class="ri-equalizer-line"></i> Configurações Avançadas
+              <i class="ri-arrow-down-s-line ml-auto transition-transform group-open:rotate-180"></i>
+            </summary>
+            <div class="grid grid-cols-2 gap-4 pt-3 animate-in fade-in slide-in-from-top-1">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold uppercase text-zinc-500">Expiração</label>
+                <div class="flex h-9 overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-white/10 dark:bg-black/40">
+                  <input type="text" inputmode="numeric" [formControl]="form.controls.durationValue" (input)="sanitizeNumberField('durationValue', $event)" class="w-full bg-transparent px-3 text-xs focus:outline-none" placeholder="Padrão: 24 horas" />
+                  <select [formControl]="form.controls.durationUnit" class="cursor-pointer border-l border-zinc-200 bg-zinc-50 px-2 text-[10px] font-bold uppercase dark:border-white/10 dark:bg-white/5">
+                    @for (unit of durationUnits; track unit) {
+                      <option [value]="unit">{{ durationUnitLabel(unit) }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold uppercase text-zinc-500">Max views</label>
+                <input type="text" inputmode="numeric" [formControl]="form.controls.maxViews" (input)="sanitizeNumberField('maxViews', $event)" class="h-9 w-full rounded-lg border border-zinc-200 bg-white px-3 text-xs focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/40" placeholder="∞" />
+              </div>
+              <div class="col-span-2 space-y-1">
+                <label class="text-[10px] font-bold uppercase text-zinc-500">Senha (opcional)</label>
+                <div class="relative">
+                  <input [type]="showCreatePassword() ? 'text' : 'password'" [formControl]="form.controls.password" class="h-9 w-full rounded-lg border border-zinc-200 bg-white pl-8 pr-10 text-xs focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/40" placeholder="Digite uma senha" />
+                  <i class="ri-lock-password-line absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400"></i>
+                  <button
+                    type="button"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                    (mousedown)="startRevealPassword()"
+                    (mouseup)="stopRevealPassword()"
+                    (mouseleave)="stopRevealPassword()"
+                    (touchstart)="startRevealPassword()"
+                    (touchend)="stopRevealPassword()"
+                    (touchcancel)="stopRevealPassword()"
+                    [attr.aria-label]="showCreatePassword() ? 'Ocultar senha' : 'Revelar senha'"
+                  >
+                    <i [class]="showCreatePassword() ? 'ri-eye-off-line' : 'ri-eye-line'"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <button class="btn h-11 min-h-0 w-full border-none bg-indigo-600 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-500 disabled:opacity-60" type="button" [disabled]="isSubmitDisabled()" (click)="submit()">
+            <span class="loading loading-spinner loading-xs" [class.hidden]="!isSubmitting()"></span>
+            {{ getCreateInputMode() === 'file' ? 'Gerar Link' : 'Encurtar URL' }}
+          </button>
+
+          @if (apiError()) {
+            <div class="rounded-xl border border-red-500/25 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">
+              {{ apiError()?.message }}
+              @if (apiError()?.errorId) {<span class="ml-1 text-xs">(errorId: {{ apiError()?.errorId }})</span>}
+            </div>
+          }
+
+          @if (generatedLink()) {
+            <div class="animate-in slide-in-from-top-2 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4">
+              <div class="mb-2 flex items-center gap-2 text-emerald-600 dark:text-emerald-400"><i class="ri-check-double-line"></i><span class="text-xs font-bold uppercase">Sucesso</span></div>
+              <div class="flex gap-2">
+                <input type="text" readonly [value]="generatedLink()?.accessUrl" class="h-10 w-full rounded-lg border border-emerald-500/20 bg-white px-3 font-mono text-xs focus:outline-none dark:bg-black/20" />
+                <button class="btn h-10 min-h-0 rounded-lg border-none bg-emerald-500 px-3 text-xs font-bold text-white hover:bg-emerald-400" (click)="copyLink()">
+                  <i [class]="copied() ? 'ri-check-line' : 'ri-file-copy-line'"></i>
+                </button>
+                <button class="btn h-10 min-h-0 rounded-lg border border-emerald-500/30 bg-transparent px-3 text-xs" (click)="openGeneratedLink()">
+                  <i class="ri-external-link-line"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (activeTab() === 'open') {
+        <div class="animate-in fade-in slide-in-from-right-4 space-y-6 py-4 duration-300">
+          <div class="mb-6 space-y-1 text-center">
+            <div class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400"><i class="ri-safe-2-line text-2xl"></i></div>
+            <h3 class="text-sm font-bold">Acessar conteúdo</h3>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">Insira código curto ou URL completa para abrir link seguro.</p>
+          </div>
+          <input type="text" [formControl]="helperForm.controls.resource" placeholder="Ex: abc12345 ou https://example.com/abc12345" class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-center text-sm focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/30" />
+
+          <label class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <input
+              type="checkbox"
+              class="h-4 w-4 cursor-pointer rounded border border-zinc-300 bg-white text-indigo-600 accent-indigo-600 dark:border-white/20 dark:bg-zinc-900"
+              [checked]="openPasswordOptionEnabled() || openRequiresPassword()"
+              [disabled]="openRequiresPassword()"
+              (change)="onOpenPasswordToggle($event)"
+            />
+            Este link usa senha
+          </label>
+
+          @if (shouldShowOpenPasswordField()) {
+            <div class="animate-in fade-in slide-in-from-top-1 space-y-1">
+              <input
+                type="password"
+                [formControl]="helperForm.controls.password"
+                placeholder="Digite a senha"
+                class="h-11 w-full rounded-xl border border-amber-300 bg-amber-50/70 px-4 text-sm focus:border-amber-500 focus:outline-none dark:border-amber-500/40 dark:bg-amber-500/10"
+              />
+              @if (passwordRetryError()) {
+                <p class="text-xs text-amber-600 dark:text-amber-400">{{ passwordRetryError() }}</p>
+              }
+            </div>
+          }
+
+          <button class="h-11 w-full rounded-xl bg-zinc-900 text-xs font-bold uppercase tracking-[0.2em] text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200" (click)="tryOpenSecureLink()">Abrir Link</button>
+        </div>
+      }
+
+      @if (activeTab() === 'revoke') {
+        <div class="animate-in fade-in slide-in-from-right-4 space-y-6 py-4 duration-300">
+          <div class="mb-6 space-y-1 text-center">
+            <div class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500 dark:bg-red-500/15"><i class="ri-alarm-warning-line text-2xl"></i></div>
+            <h3 class="text-sm font-bold">Destruir acesso</h3>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">Ação irreversível. O link deixará de funcionar imediatamente.</p>
+          </div>
+          <input type="text" [formControl]="revokeForm.controls.shortCode" placeholder="shortCode ou URL completa" class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-center text-sm focus:border-red-500 focus:outline-none dark:border-white/10 dark:bg-black/30" />
+          <button class="h-11 w-full rounded-xl bg-red-500 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-red-500/30 transition hover:bg-red-600" (click)="revoke()">Revogar Permanentemente</button>
+          @if (revokeFeedback()) {
+            <p class="text-sm" [class.text-emerald-500]="revokeFeedback()?.kind === 'success'" [class.text-red-500]="revokeFeedback()?.kind === 'error'">{{ revokeFeedback()?.message }}</p>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+
+  @if (showRevokeConfirm()) {
+    <div class="fixed inset-0 z-[90] flex items-center justify-center bg-zinc-950/60 px-4 backdrop-blur-sm" (click)="cancelRevoke()">
+      <div class="w-full max-w-sm rounded-2xl border border-zinc-200 bg-white/95 p-0 shadow-2xl dark:border-white/10 dark:bg-zinc-900/95" (click)="$event.stopPropagation()">
+        <div class="border-b border-zinc-200 px-5 py-4 dark:border-white/10">
+          <h3 class="text-sm font-bold tracking-wide text-zinc-900 dark:text-zinc-100">Confirmar revogação</h3>
+          <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Essa ação é permanente e o link deixará de funcionar.</p>
+        </div>
+        <div class="space-y-2 px-5 py-4">
+          <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Short code</p>
+          <div class="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-sm dark:border-white/10 dark:bg-black/30">{{ pendingRevokeCode() }}</div>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t border-zinc-200 px-5 py-4 dark:border-white/10">
+          <button class="btn btn-ghost btn-sm" type="button" (click)="cancelRevoke()">Cancelar</button>
+          <button class="btn btn-error btn-sm" type="button" [disabled]="revokeLoading()" (click)="confirmRevoke()">
+            <span class="loading loading-spinner loading-xs" [class.hidden]="!revokeLoading()"></span>
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</section>
