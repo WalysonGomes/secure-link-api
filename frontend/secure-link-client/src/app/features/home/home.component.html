@@ -52,7 +52,7 @@
         <div class="animate-in fade-in slide-in-from-left-4 space-y-4 duration-300">
           @if (getCreateInputMode() !== 'file') {
             <div class="space-y-1.5">
-              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">URL de destino <span class="tooltip tooltip-bottom inline-flex align-middle" data-tip="Exemplo válido: https://example.com" tabindex="0"><i class="ri-question-line text-sm"></i></span></label>
+              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">URL de destino</label>
               <div class="relative">
                 <input type="text" [formControl]="form.controls.targetUrl" (input)="onUrlChanged()" class="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-10 text-sm shadow-sm placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-white/10 dark:bg-black/30 dark:text-white" placeholder="https://example.com" />
                 <i class="ri-link-m absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
@@ -71,7 +71,7 @@
 
           @if (getCreateInputMode() !== 'url') {
             <div class="space-y-1.5">
-              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">Arquivo <span class="tooltip tooltip-bottom inline-flex align-middle" data-tip="Anexe um único arquivo para gerar o link seguro" tabindex="0"><i class="ri-information-line text-sm"></i></span></label>
+              <label class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">Arquivo</label>
               <label class="relative flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-zinc-50/80 transition-all dark:bg-black/20"
                 [class.border-indigo-500]="isDragOver()"
                 [class.bg-indigo-500/10]="isDragOver()"
@@ -97,7 +97,7 @@
 
           <details class="group rounded-xl border border-zinc-200/90 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.03]">
             <summary class="flex cursor-pointer list-none items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-zinc-600 transition-colors hover:text-indigo-500 dark:text-zinc-300">
-              <i class="ri-equalizer-line"></i> Configurações Avançadas <span class="tooltip tooltip-bottom inline-flex align-middle" data-tip="Senha, expiração e limite de visualizações" tabindex="0"><i class="ri-question-line text-sm"></i></span>
+              <i class="ri-equalizer-line"></i> Configurações Avançadas
               <i class="ri-arrow-down-s-line ml-auto transition-transform group-open:rotate-180"></i>
             </summary>
             <div class="grid grid-cols-2 gap-4 pt-3 animate-in fade-in slide-in-from-top-1">
@@ -118,7 +118,7 @@
                 <input type="text" inputmode="numeric" [formControl]="form.controls.maxViews" (input)="sanitizeNumberField('maxViews', $event)" class="h-9 w-full rounded-lg border border-zinc-200 bg-white px-3 text-xs focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/40" placeholder="∞" />
               </div>
               <div class="col-span-2 space-y-1">
-                <label class="text-[10px] font-bold uppercase text-zinc-500">Senha (opcional) <span class="tooltip tooltip-left inline-flex align-middle" data-tip="Segure o olho para revelar a senha" tabindex="0"><i class="ri-eye-line text-sm"></i></span></label>
+                <label class="text-[10px] font-bold uppercase text-zinc-500">Senha (opcional)</label>
                 <div class="relative">
                   <input [type]="showCreatePassword() ? 'text' : 'password'" [formControl]="form.controls.password" class="h-9 w-full rounded-lg border border-zinc-200 bg-white pl-8 pr-10 text-xs focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/40" placeholder="Digite uma senha" />
                   <i class="ri-lock-password-line absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400"></i>

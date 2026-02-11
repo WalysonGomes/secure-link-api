@@ -209,10 +209,17 @@ export class HomeComponent {
 
   tryOpenSecureLink(): void {
     const shortCode = this.extractShortCode(this.helperForm.controls.resource.value.trim());
-    const password = this.helperForm.controls.password.value.trim() || undefined;
+    const rawPassword = this.helperForm.controls.password.value.trim();
+    const shouldSendPassword = this.openRequiresPassword();
+    const password = shouldSendPassword ? rawPassword || undefined : undefined;
 
     if (!shortCode) {
       this.openError.set({ status: 400, message: 'Informe um shortCode ou URL válida /l/{shortCode}.' });
+      return;
+    }
+
+    if (shouldSendPassword && !password) {
+      this.passwordRetryError.set('Digite a senha para acessar este link protegido.');
       return;
     }
 

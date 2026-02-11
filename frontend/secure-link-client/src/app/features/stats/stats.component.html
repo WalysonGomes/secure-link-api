@@ -7,7 +7,6 @@
     <button
       (click)="refresh()"
       [disabled]="isLoading()"
-      title="Atualizar dados do dashboard"
       class="btn btn-sm h-9 gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-600 shadow-sm transition hover:border-indigo-500 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300"
     >
       <i class="ri-refresh-line" [class.animate-spin]="isLoading()"></i> Atualizar
@@ -92,7 +91,7 @@
               <div class="space-y-1.5">
                 <div class="flex items-center justify-between text-xs">
                   <div class="flex items-center gap-2">
-                    <span class="font-medium">{{ item.accessDate }}</span>
+                    <span class="font-medium">{{ dailyItemLabel(item) }}</span>
                     @if (isDailyPeak(item)) {
                       <span class="rounded-full border border-violet-500/20 bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-500">pico</span>
                     }
@@ -132,7 +131,7 @@
                       <td class="px-4 py-3">
                         <div class="flex items-center gap-2">
                           <span class="max-w-28 truncate rounded-md border border-zinc-300/70 bg-zinc-100/80 px-2 py-1 font-mono text-xs dark:border-white/15 dark:bg-white/5">{{ item.shortCode }}</span>
-                          <button type="button" class="text-zinc-400 transition hover:text-indigo-500" title="Copiar código" (click)="copyShortCode(item.shortCode)"><i class="ri-file-copy-line"></i></button>
+                          <button type="button" class="text-zinc-400 transition hover:text-indigo-500" (click)="copyShortCode(item.shortCode)"><i class="ri-file-copy-line"></i></button>
                         </div>
                       </td>
                       <td class="px-4 py-3 text-right"><span class="rounded-md border border-zinc-300/70 bg-zinc-100/80 px-2 py-1 font-mono text-xs dark:border-white/15 dark:bg-white/5">{{ item.accessCount }}</span></td>
