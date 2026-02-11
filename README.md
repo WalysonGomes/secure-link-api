@@ -295,6 +295,14 @@ GET /api/stats/links/top?limit=5
 
 ```
 
+### Dashboard do Client (placeholders de mídia)
+
+- [adicione um gif aqui: visão geral do dashboard carregando os cards principais]
+- [adicione uma imagem aqui: tabela de Top Links e Falhas]
+- [adicione uma imagem aqui: gráfico/barras de Volume por hora]
+- [adicione uma imagem aqui: gráfico/barras de Volume por dia]
+- [adicione uma imagem aqui: tabela de Exceções de segurança]
+
 ## Testes
 
 O projeto possui **testes unitários focados em regras de negócio**, cobrindo:
