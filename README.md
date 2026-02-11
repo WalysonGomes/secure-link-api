@@ -128,15 +128,10 @@ Content-Type: multipart/form-data
 
 - `password` — opcional
 
-**Exemplo (cURL)**
+**Demonstração visual**
 
-```bash
-curl -X POST http://localhost:8080/api/links/upload \
-  -F "file=@/path/to/document.pdf" \
-  -F "maxViews=5" \
-  -F "password=secure_file"
-
-```
+- [adicione um gif aqui: upload de arquivo + criação de link]
+- [adicione uma imagem aqui: retorno de sucesso da criação de link]
 
 ## Resolução do Link (`/l/{shortCode}`)
 
@@ -187,13 +182,10 @@ X-Link-Password: <password>
 
 > A senha **não deve** ser enviada via query parameters ou body da requisição.
 
-### Exemplo (cURL)
+### Demonstração visual
 
-```bash
-curl -i http://localhost:8080/l/abc12345 \
-  -H "X-Link-Password: link_password"
-
-```
+- [adicione um gif aqui: tentativa de acesso com senha]
+- [adicione uma imagem aqui: resposta de acesso autorizado]
 
 ## Revogação de Link
 
