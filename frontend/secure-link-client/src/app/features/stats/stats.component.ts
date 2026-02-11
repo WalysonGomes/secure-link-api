@@ -11,12 +11,11 @@ import {
   SecurityException,
   TopLink
 } from '../../shared/models/api.models';
-import { DataTableComponent } from '../../shared/ui/data-table.component';
 
 @Component({
   selector: 'app-stats',
   standalone: true,
-  imports: [CommonModule, DataTableComponent],
+  imports: [CommonModule],
   templateUrl: './stats.component.html'
 })
 export class StatsComponent implements OnInit, OnDestroy {
@@ -278,7 +277,4 @@ export class StatsComponent implements OnInit, OnDestroy {
     return 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
   }
 
-  toSecurityRows(): Array<Array<string | number>> {
-    return this.securityExceptions().map((item) => [item.shortCode, item.count]);
-  }
 }

@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
@@ -41,6 +42,8 @@ export class HomeComponent {
 
   readonly revokeLoading = signal(false);
   readonly revokeFeedback = signal<{ kind: 'success' | 'error'; message: string } | null>(null);
+  readonly showRevokeConfirm = signal(false);
+  readonly pendingRevokeCode = signal('');
 
   readonly form = this.fb.nonNullable.group({
     targetUrl: ['', [Validators.pattern(/^https?:\/\/.+/i)]],
@@ -182,6 +185,7 @@ export class HomeComponent {
         next: (response) => {
           this.generatedLink.set(response);
           this.copied.set(false);
+          this.resetCreateForm();
           this.toastService.show({ kind: 'success', title: 'Link criado', message: response.shortCode });
         },
         error: (error: ApiError) => this.apiError.set(error)
@@ -230,10 +234,16 @@ export class HomeComponent {
       .openSecureLink(shortCode, password)
       .pipe(finalize(() => this.openLoading.set(false)))
       .subscribe({
-        next: () => {
+        next: (response) => {
           this.openRequiresPassword.set(false);
           this.passwordRetryError.set('');
-          this.helperForm.controls.password.setValue('');
+          this.clearOpenFields();
+
+          if (password) {
+            this.handleProtectedResolution(response, shortCode);
+            return;
+          }
+
           this.openInNewTab(this.resolveBackendLinkUrl(shortCode));
         },
         error: (error: ApiError) => {
@@ -248,6 +258,11 @@ export class HomeComponent {
           }
 
           if (error.status === 0) {
+            if (password) {
+              this.passwordRetryError.set('Senha aceita, mas o redirecionamento externo foi bloqueado por CORS no navegador.');
+              return;
+            }
+
             this.openRequiresPassword.set(false);
             this.passwordRetryError.set('');
             this.openInNewTab(this.resolveBackendLinkUrl(shortCode));
@@ -279,7 +294,18 @@ export class HomeComponent {
       return;
     }
 
-    if (!window.confirm(`Revoke link ${shortCode}? This cannot be undone.`)) {
+    this.pendingRevokeCode.set(shortCode);
+    this.showRevokeConfirm.set(true);
+  }
+
+  cancelRevoke(): void {
+    this.showRevokeConfirm.set(false);
+    this.pendingRevokeCode.set('');
+  }
+
+  confirmRevoke(): void {
+    const shortCode = this.pendingRevokeCode();
+    if (!shortCode) {
       return;
     }
 
@@ -291,13 +317,14 @@ export class HomeComponent {
       .pipe(finalize(() => this.revokeLoading.set(false)))
       .subscribe({
         next: () => {
-          this.revokeFeedback.set({ kind: 'success', message: 'Link revoked successfully.' });
+          this.revokeFeedback.set({ kind: 'success', message: 'Link revogado com sucesso.' });
           this.revokeForm.reset();
+          this.cancelRevoke();
         },
         error: (error: ApiError) => {
           this.revokeFeedback.set({
             kind: 'error',
-            message: error.status === 404 ? 'ShortCode not found.' : error.message
+            message: error.status === 404 ? 'ShortCode não encontrado.' : error.message
           });
         }
       });
@@ -309,6 +336,59 @@ export class HomeComponent {
 
   private openInNewTab(url: string): void {
     window.open(url, '_blank', 'noopener');
+  }
+
+  private handleProtectedResolution(response: HttpResponse<Blob>, shortCode: string): void {
+    const locationHeader = response.headers.get('Location');
+    const responseUrl = response.url ?? '';
+
+    if (locationHeader) {
+      this.openInNewTab(locationHeader);
+      return;
+    }
+
+    if (responseUrl && !responseUrl.endsWith(`/l/${shortCode}`)) {
+      this.openInNewTab(responseUrl);
+      return;
+    }
+
+    const contentDisposition = response.headers.get('Content-Disposition') ?? '';
+    if (contentDisposition.toLowerCase().includes('attachment') && response.body) {
+      const blobUrl = URL.createObjectURL(response.body);
+      const anchor = document.createElement('a');
+      anchor.href = blobUrl;
+      const filename = /filename="?([^";]+)"?/i.exec(contentDisposition)?.[1];
+      if (filename) {
+        anchor.download = filename;
+      }
+
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(blobUrl);
+      return;
+    }
+
+    this.openError.set({
+      status: 400,
+      message: 'Senha validada, mas o navegador bloqueou a resolução automática do destino.'
+    });
+  }
+
+  private clearOpenFields(): void {
+    this.helperForm.controls.resource.setValue('');
+    this.helperForm.controls.password.setValue('');
+  }
+
+  private resetCreateForm(): void {
+    this.form.reset({
+      targetUrl: '',
+      durationValue: null,
+      durationUnit: 'minutes',
+      maxViews: null,
+      password: ''
+    });
+    this.chosenFile.set(null);
   }
 
   private setFile(file: File | null): void {

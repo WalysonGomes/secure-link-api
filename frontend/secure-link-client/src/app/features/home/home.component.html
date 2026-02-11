@@ -215,4 +215,28 @@
     </div>
   </div>
 
+
+  <dialog class="modal" [class.modal-open]="showRevokeConfirm()">
+    <div class="modal-box max-w-sm rounded-2xl border border-zinc-200 bg-white/95 p-0 shadow-2xl dark:border-white/10 dark:bg-zinc-900/95">
+      <div class="border-b border-zinc-200 px-5 py-4 dark:border-white/10">
+        <h3 class="text-sm font-bold tracking-wide text-zinc-900 dark:text-zinc-100">Confirmar revogação</h3>
+        <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Essa ação é permanente e o link deixará de funcionar.</p>
+      </div>
+      <div class="space-y-2 px-5 py-4">
+        <p class="text-xs uppercase tracking-[0.16em] text-zinc-500">Short code</p>
+        <div class="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-sm dark:border-white/10 dark:bg-black/30">{{ pendingRevokeCode() }}</div>
+      </div>
+      <div class="flex items-center justify-end gap-2 border-t border-zinc-200 px-5 py-4 dark:border-white/10">
+        <button class="btn btn-ghost btn-sm" type="button" (click)="cancelRevoke()">Cancelar</button>
+        <button class="btn btn-error btn-sm" type="button" [disabled]="revokeLoading()" (click)="confirmRevoke()">
+          <span class="loading loading-spinner loading-xs" [class.hidden]="!revokeLoading()"></span>
+          Confirmar
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button type="button" (click)="cancelRevoke()">close</button>
+    </form>
+  </dialog>
+
 </section>
