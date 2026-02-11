@@ -259,7 +259,7 @@ export class HomeComponent {
 
           if (error.status === 0) {
             if (password) {
-              this.passwordRetryError.set('Senha aceita, mas o redirecionamento externo foi bloqueado por CORS no navegador.');
+              this.passwordRetryError.set('Senha aceita, mas o destino externo bloqueou CORS para XHR. Abra pelo backend ou ajuste o destino para permitir redirecionamento.');
               return;
             }
 
@@ -343,7 +343,7 @@ export class HomeComponent {
     const responseUrl = response.url ?? '';
 
     if (locationHeader) {
-      this.openInNewTab(locationHeader);
+      this.openInNewTab(new URL(locationHeader, this.apiBaseUrl).toString());
       return;
     }
 

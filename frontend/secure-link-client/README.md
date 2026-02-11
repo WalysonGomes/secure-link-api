@@ -45,3 +45,26 @@ Se o backend estiver em outro host, altere o provider no `app.config.ts`.
   - normalização de erro com suporte a `errorId`
 - Toasts globais para erros de API
 - Navbar sticky com status da API e toggle de tema light/dark
+
+
+## CORS (backend)
+
+Para o fluxo de **Open secure link** com senha funcionar no ambiente local, o backend precisa permitir origem do client e expor headers usados no fluxo.
+
+Configuração atual esperada no backend (`CorsConfig`):
+
+- origins: `http://localhost:4200` e `http://127.0.0.1:4200`
+- headers permitidos: `X-Link-Password`, `X-Correlation-Id`, `Content-Type`, `Authorization`
+- headers expostos: `Location`, `Content-Disposition`, `X-Error-Id`
+
+> Observação importante: mesmo com CORS correto no backend, destinos externos (ex.: `https://google.com`) podem bloquear leitura de redirect em XHR por política do próprio domínio de destino.
+
+Se você preferir configurar CORS por `application.properties`, use equivalente a:
+
+```properties
+# Exemplo (equivalente):
+# spring.web.cors.allowed-origins=http://localhost:4200,http://127.0.0.1:4200
+# spring.web.cors.allowed-methods=GET,POST,PUT,PATCH,DELETE,OPTIONS
+# spring.web.cors.allowed-headers=Content-Type,Authorization,X-Link-Password,X-Correlation-Id
+# spring.web.cors.exposed-headers=Location,Content-Disposition,X-Error-Id
+```
