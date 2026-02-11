@@ -36,6 +36,7 @@ export class HomeComponent {
   readonly openError = signal<ApiError | null>(null);
   readonly openLoading = signal(false);
   readonly openRequiresPassword = signal(false);
+  readonly openPasswordOptionEnabled = signal(false);
   readonly passwordRetryError = signal('');
 
   readonly showCreatePassword = signal(false);
@@ -88,6 +89,11 @@ export class HomeComponent {
     this.apiError.set(null);
     this.openError.set(null);
     this.revokeFeedback.set(null);
+
+    if (tab !== 'open') {
+      this.openPasswordOptionEnabled.set(false);
+      this.passwordRetryError.set('');
+    }
   }
 
   onFileSelected(event: Event): void {
@@ -152,6 +158,23 @@ export class HomeComponent {
     this.form.controls.targetUrl.setValue('');
   }
 
+  shouldShowOpenPasswordField(): boolean {
+    return this.openRequiresPassword() || this.openPasswordOptionEnabled();
+  }
+
+  onOpenPasswordToggle(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.toggleOpenPasswordOption(input.checked);
+  }
+
+  toggleOpenPasswordOption(enabled: boolean): void {
+    this.openPasswordOptionEnabled.set(enabled);
+    if (!enabled && !this.openRequiresPassword()) {
+      this.helperForm.controls.password.setValue('');
+      this.passwordRetryError.set('');
+    }
+  }
+
   submit(): void {
     if (this.isSubmitDisabled()) {
       return;
@@ -214,15 +237,17 @@ export class HomeComponent {
   tryOpenSecureLink(): void {
     const shortCode = this.extractShortCode(this.helperForm.controls.resource.value.trim());
     const rawPassword = this.helperForm.controls.password.value.trim();
-    const shouldSendPassword = this.openRequiresPassword();
+    const shouldSendPassword = this.shouldShowOpenPasswordField();
     const password = shouldSendPassword ? rawPassword || undefined : undefined;
 
     if (!shortCode) {
-      this.openError.set({ status: 400, message: 'Informe um shortCode ou URL válida /l/{shortCode}.' });
+      const error = { status: 400, message: 'Informe um shortCode ou URL válida /l/{shortCode}.' } as ApiError;
+      this.openError.set(error);
+      this.toastService.show({ kind: 'warning', title: 'Entrada inválida', message: error.message });
       return;
     }
 
-    if (shouldSendPassword && !password) {
+    if (this.openRequiresPassword() && !password) {
       this.passwordRetryError.set('Digite a senha para acessar este link protegido.');
       return;
     }
@@ -249,6 +274,7 @@ export class HomeComponent {
         error: (error: ApiError) => {
           if (error.status === 401) {
             this.openRequiresPassword.set(true);
+            this.openPasswordOptionEnabled.set(true);
             this.passwordRetryError.set(
               password
                 ? 'Senha inválida. Confira e tente novamente.'
@@ -259,7 +285,9 @@ export class HomeComponent {
 
           if (error.status === 0) {
             if (password) {
-              this.passwordRetryError.set('Senha aceita, mas o destino externo bloqueou CORS para XHR. Abra pelo backend ou ajuste o destino para permitir redirecionamento.');
+              const message = 'Senha aceita, mas o destino externo bloqueou CORS para XHR. Abra pelo backend ou ajuste o destino para permitir redirecionamento.';
+              this.passwordRetryError.set(message);
+              this.toastService.show({ kind: 'warning', title: 'Redirecionamento bloqueado', message });
               return;
             }
 
@@ -270,6 +298,7 @@ export class HomeComponent {
           }
 
           this.openError.set(error);
+          this.toastService.show({ kind: 'error', title: `Erro HTTP ${error.status || 0}`, message: error.message });
         }
       });
   }
@@ -362,16 +391,14 @@ export class HomeComponent {
             // handled by fallback below
           }
 
-          this.openError.set({
-            status: 400,
-            message: 'Resposta inválida ao resolver link protegido.'
-          });
+          const error = { status: 400, message: 'Resposta inválida ao resolver link protegido.' } as ApiError;
+          this.openError.set(error);
+          this.toastService.show({ kind: 'error', title: 'Falha na resolução', message: error.message });
         })
         .catch(() => {
-          this.openError.set({
-            status: 400,
-            message: 'Não foi possível processar a resposta de redirecionamento.'
-          });
+          const error = { status: 400, message: 'Não foi possível processar a resposta de redirecionamento.' } as ApiError;
+          this.openError.set(error);
+          this.toastService.show({ kind: 'error', title: 'Falha na resolução', message: error.message });
         });
       return;
     }
@@ -398,10 +425,12 @@ export class HomeComponent {
       return;
     }
 
-    this.openError.set({
+    const error = {
       status: 400,
       message: 'Senha validada, mas o navegador bloqueou a resolução automática do destino.'
-    });
+    } as ApiError;
+    this.openError.set(error);
+    this.toastService.show({ kind: 'warning', title: 'Resolução incompleta', message: error.message });
   }
 
   private clearOpenFields(): void {

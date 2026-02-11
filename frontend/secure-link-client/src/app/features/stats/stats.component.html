@@ -65,7 +65,7 @@
               <div class="space-y-1.5">
                 <div class="flex items-center justify-between text-xs">
                   <div class="flex items-center gap-2">
-                    <span class="font-medium">{{ item.hour }}h</span>
+                    <span class="font-medium">{{ localHour(item.hour) }}h</span>
                     @if (isHourlyPeak(item)) {
                       <span class="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-500">pico</span>
                     }

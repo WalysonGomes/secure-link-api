@@ -1,10 +1,10 @@
 <section class="mx-auto w-full max-w-xl animate-in fade-in zoom-in-95 duration-500">
   <div class="mb-8 space-y-2 text-center">
     <h1 class="text-3xl font-extrabold tracking-tight md:text-4xl">
-      Criptografia <span class="bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">Simplificada</span>
+      Compartilhe com <span class="bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">controle total</span>
     </h1>
     <p class="mx-auto max-w-md text-base text-zinc-500 dark:text-zinc-400">
-      Compartilhe segredos com links que expiram, exigem senha e podem ser revogados em segundos.
+      Gere links seguros para redirecionamento e arquivos, com senha, expiração e revogação imediata quando necessário.
     </p>
   </div>
 
@@ -177,7 +177,19 @@
             <p class="text-xs text-zinc-500 dark:text-zinc-400">Insira código curto ou URL completa para abrir link seguro.</p>
           </div>
           <input type="text" [formControl]="helperForm.controls.resource" placeholder="Ex: abc12345 ou https://example.com/abc12345" class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-center text-sm focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/30" />
-          @if (openRequiresPassword()) {
+
+          <label class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <input
+              type="checkbox"
+              class="checkbox checkbox-xs"
+              [checked]="openPasswordOptionEnabled() || openRequiresPassword()"
+              [disabled]="openRequiresPassword()"
+              (change)="onOpenPasswordToggle($event)"
+            />
+            Este link usa senha
+          </label>
+
+          @if (shouldShowOpenPasswordField()) {
             <div class="animate-in fade-in slide-in-from-top-1 space-y-1">
               <input
                 type="password"
@@ -185,16 +197,13 @@
                 placeholder="Digite a senha"
                 class="h-11 w-full rounded-xl border border-amber-300 bg-amber-50/70 px-4 text-sm focus:border-amber-500 focus:outline-none dark:border-amber-500/40 dark:bg-amber-500/10"
               />
-              <p class="text-xs text-amber-600 dark:text-amber-400">Este link exige senha para acesso. Informe a senha e tente novamente.</p>
+              @if (passwordRetryError()) {
+                <p class="text-xs text-amber-600 dark:text-amber-400">{{ passwordRetryError() }}</p>
+              }
             </div>
           }
+
           <button class="h-11 w-full rounded-xl bg-zinc-900 text-xs font-bold uppercase tracking-[0.2em] text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200" (click)="tryOpenSecureLink()">Abrir Link</button>
-          @if (passwordRetryError()) {
-            <p class="text-sm text-amber-600 dark:text-amber-400">{{ passwordRetryError() }}</p>
-          }
-          @if (openError()) {
-            <p class="text-sm text-red-500">{{ openError()?.message }}</p>
-          }
         </div>
       }
 

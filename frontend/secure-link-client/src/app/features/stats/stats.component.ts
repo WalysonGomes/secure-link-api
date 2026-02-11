@@ -228,6 +228,12 @@ export class StatsComponent implements OnInit, OnDestroy {
     return this.dailyLabel(item);
   }
 
+
+  localHour(hour: number): number {
+    const offsetHours = -new Date().getTimezoneOffset() / 60;
+    return (hour + offsetHours + 24) % 24;
+  }
+
   peakHourlyCount(): number {
     return Math.max(...this.orderedHourly().map((item) => item.count), 1);
   }
