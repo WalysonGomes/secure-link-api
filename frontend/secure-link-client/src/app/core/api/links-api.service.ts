@@ -51,7 +51,9 @@ export class LinksApiService {
     let headers = new HttpHeaders();
 
     if (password) {
-      headers = headers.set('X-Link-Password', password);
+      headers = headers
+        .set('X-Link-Password', password)
+        .set('Accept', 'application/json, application/octet-stream');
     }
 
     return this.http.get(`${this.baseUrl}l/${shortCode}`, {

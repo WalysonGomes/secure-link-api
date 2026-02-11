@@ -341,9 +341,38 @@ export class HomeComponent {
   private handleProtectedResolution(response: HttpResponse<Blob>, shortCode: string): void {
     const locationHeader = response.headers.get('Location');
     const responseUrl = response.url ?? '';
+    const contentType = (response.headers.get('Content-Type') ?? '').toLowerCase();
 
     if (locationHeader) {
       this.openInNewTab(new URL(locationHeader, this.apiBaseUrl).toString());
+      return;
+    }
+
+    if (contentType.includes('application/json') && response.body) {
+      response.body
+        .text()
+        .then((raw) => {
+          try {
+            const payload = JSON.parse(raw) as { type?: string; targetUrl?: string };
+            if (payload.type === 'REDIRECT' && payload.targetUrl) {
+              this.openInNewTab(payload.targetUrl);
+              return;
+            }
+          } catch {
+            // handled by fallback below
+          }
+
+          this.openError.set({
+            status: 400,
+            message: 'Resposta inválida ao resolver link protegido.'
+          });
+        })
+        .catch(() => {
+          this.openError.set({
+            status: 400,
+            message: 'Não foi possível processar a resposta de redirecionamento.'
+          });
+        });
       return;
     }
 
