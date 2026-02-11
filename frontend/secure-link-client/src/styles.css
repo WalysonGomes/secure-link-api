@@ -23,3 +23,37 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(161, 161, 170, 0.4);
 }
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip[data-tip]:hover::after,
+.tooltip[data-tip]:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 50;
+  max-width: 220px;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(161, 161, 170, 0.25);
+  background: rgba(9, 9, 11, 0.95);
+  color: #fafafa;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.65rem;
+  line-height: 1.1;
+  white-space: normal;
+}
+
+.tooltip-bottom[data-tip]:hover::after,
+.tooltip-bottom[data-tip]:focus-visible::after {
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tooltip-left[data-tip]:hover::after,
+.tooltip-left[data-tip]:focus-visible::after {
+  top: 50%;
+  right: calc(100% + 6px);
+  transform: translateY(-50%);
+}

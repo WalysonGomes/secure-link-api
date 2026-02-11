@@ -104,13 +104,14 @@
               <div class="space-y-1">
                 <label class="text-[10px] font-bold uppercase text-zinc-500">Expiração</label>
                 <div class="flex h-9 overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-white/10 dark:bg-black/40">
-                  <input type="text" inputmode="numeric" [formControl]="form.controls.durationValue" (input)="sanitizeNumberField('durationValue', $event)" class="w-full bg-transparent px-3 text-xs focus:outline-none" />
+                  <input type="text" inputmode="numeric" [formControl]="form.controls.durationValue" (input)="sanitizeNumberField('durationValue', $event)" class="w-full bg-transparent px-3 text-xs focus:outline-none" placeholder="Padrão do backend: 24h" />
                   <select [formControl]="form.controls.durationUnit" class="cursor-pointer border-l border-zinc-200 bg-zinc-50 px-2 text-[10px] font-bold uppercase dark:border-white/10 dark:bg-white/5">
                     @for (unit of durationUnits; track unit) {
                       <option [value]="unit">{{ unit }}</option>
                     }
                   </select>
                 </div>
+                <p class="text-[10px] text-amber-600/90 dark:text-amber-400/90">Se não informar expiração, o backend aplica 24h automaticamente.</p>
               </div>
               <div class="space-y-1">
                 <label class="text-[10px] font-bold uppercase text-zinc-500">Max views</label>
@@ -124,12 +125,12 @@
                   <button
                     type="button"
                     class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-                    (mousedown)="startRevealPassword('create')"
-                    (mouseup)="stopRevealPassword('create')"
-                    (mouseleave)="stopRevealPassword('create')"
-                    (touchstart)="startRevealPassword('create')"
-                    (touchend)="stopRevealPassword('create')"
-                    (touchcancel)="stopRevealPassword('create')"
+                    (mousedown)="startRevealPassword()"
+                    (mouseup)="stopRevealPassword()"
+                    (mouseleave)="stopRevealPassword()"
+                    (touchstart)="startRevealPassword()"
+                    (touchend)="stopRevealPassword()"
+                    (touchcancel)="stopRevealPassword()"
                     [attr.aria-label]="showCreatePassword() ? 'Ocultar senha' : 'Revelar senha'"
                   >
                     <i [class]="showCreatePassword() ? 'ri-eye-off-line' : 'ri-eye-line'"></i>
@@ -176,7 +177,21 @@
             <p class="text-xs text-zinc-500 dark:text-zinc-400">Insira código curto ou URL completa para abrir link seguro.</p>
           </div>
           <input type="text" [formControl]="helperForm.controls.resource" placeholder="Ex: abc12345 ou https://example.com/abc12345" class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-center text-sm focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/30" />
+          @if (openRequiresPassword()) {
+            <div class="animate-in fade-in slide-in-from-top-1 space-y-1">
+              <input
+                type="password"
+                [formControl]="helperForm.controls.password"
+                placeholder="Digite a senha"
+                class="h-11 w-full rounded-xl border border-amber-300 bg-amber-50/70 px-4 text-sm focus:border-amber-500 focus:outline-none dark:border-amber-500/40 dark:bg-amber-500/10"
+              />
+              <p class="text-xs text-amber-600 dark:text-amber-400">Este link exige senha para acesso. Informe a senha e tente novamente.</p>
+            </div>
+          }
           <button class="h-11 w-full rounded-xl bg-zinc-900 text-xs font-bold uppercase tracking-[0.2em] text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200" (click)="tryOpenSecureLink()">Abrir Link</button>
+          @if (passwordRetryError()) {
+            <p class="text-sm text-amber-600 dark:text-amber-400">{{ passwordRetryError() }}</p>
+          }
           @if (openError()) {
             <p class="text-sm text-red-500">{{ openError()?.message }}</p>
           }
@@ -200,33 +215,4 @@
     </div>
   </div>
 
-  <dialog class="modal backdrop-blur-md bg-zinc-950/50" [class.modal-open]="passwordModalOpen()">
-    <div class="modal-box max-w-xs rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-2xl dark:border-white/10 dark:bg-zinc-900">
-      <div class="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"><i class="ri-lock-2-fill"></i></div>
-      <h3 class="mb-1 text-sm font-bold">Senha necessária</h3>
-      <div class="relative">
-        <input [type]="showRetryPassword() ? 'text' : 'password'" [formControl]="passwordForm.controls.password" placeholder="Digite uma senha" class="mb-2 mt-2 h-10 w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 pr-10 text-center text-lg tracking-widest focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-black/40" />
-        <button
-          type="button"
-          class="absolute right-2 top-1/2 mt-1 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-          (mousedown)="startRevealPassword('retry')"
-          (mouseup)="stopRevealPassword('retry')"
-          (mouseleave)="stopRevealPassword('retry')"
-          (touchstart)="startRevealPassword('retry')"
-          (touchend)="stopRevealPassword('retry')"
-          (touchcancel)="stopRevealPassword('retry')"
-          [attr.aria-label]="showRetryPassword() ? 'Ocultar senha' : 'Revelar senha'"
-        >
-          <i [class]="showRetryPassword() ? 'ri-eye-off-line' : 'ri-eye-line'"></i>
-        </button>
-      </div>
-      @if (passwordRetryError()) {
-        <p class="mb-2 text-xs text-red-500">{{ passwordRetryError() }}</p>
-      }
-      <div class="flex gap-2">
-        <button class="h-9 flex-1 rounded-lg text-xs font-bold text-zinc-500 transition hover:bg-zinc-100 dark:hover:bg-white/5" (click)="closePasswordModal()">Cancelar</button>
-        <button class="h-9 flex-1 rounded-lg bg-indigo-600 text-xs font-bold text-white transition hover:bg-indigo-500" [disabled]="passwordForm.invalid" (click)="retryWithPassword()">OK</button>
-      </div>
-    </div>
-  </dialog>
 </section>

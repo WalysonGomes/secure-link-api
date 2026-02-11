@@ -75,37 +75,71 @@ export class StatsComponent implements OnInit, OnDestroy {
         this.isLoading.set(false);
       },
       error: (error: { message?: string }) => {
-        this.error.set(error.message ?? 'Failed to load dashboard data.');
+        this.error.set(error.message ?? 'Falha ao carregar os dados do dashboard.');
         this.isLoading.set(false);
       }
     });
   }
 
-  maxHourly(): number {
-    return Math.max(...this.hourly().map((item) => item.count), 1);
-  }
-
-  maxDaily(): number {
-    return Math.max(...this.daily().map((item) => item.count), 1);
-  }
-
-  toHourlyRows(): Array<Array<string | number>> {
+  orderedHourly(): HourlyAccess[] {
     return this.hourly()
       .slice()
-      .sort((a, b) => a.hour - b.hour)
-      .map((item) => [item.hour, item.count]);
+      .sort((a, b) => a.hour - b.hour);
   }
 
-  toDailyRows(): Array<Array<string | number>> {
-    return this.daily().map((item) => [item.accessDate, item.count]);
+  orderedDaily(): DailyAccess[] {
+    return this.daily()
+      .slice()
+      .sort((a, b) => a.accessDate.localeCompare(b.accessDate));
   }
 
-  toFailureRows(): Array<Array<string | number>> {
-    return this.failures().map((item) => [item.result, item.count]);
+  peakHourlyCount(): number {
+    return Math.max(...this.orderedHourly().map((item) => item.count), 1);
   }
 
-  toTopRows(): Array<Array<string | number>> {
-    return this.topLinks().map((item) => [item.shortCode, item.accessCount]);
+  peakDailyCount(): number {
+    return Math.max(...this.orderedDaily().map((item) => item.count), 1);
+  }
+
+  percentageFromPeak(value: number, peak: number): number {
+    return Math.round((value / Math.max(peak, 1)) * 100);
+  }
+
+  isHourlyPeak(item: HourlyAccess): boolean {
+    return item.count === this.peakHourlyCount();
+  }
+
+  isDailyPeak(item: DailyAccess): boolean {
+    return item.count === this.peakDailyCount();
+  }
+
+  copyShortCode(shortCode: string): void {
+    navigator.clipboard.writeText(shortCode);
+  }
+
+  translatedFailureLabel(code: string): string {
+    const map: Record<string, string> = {
+      PASSWORD_REQUIRED: 'Senha obrigatória',
+      INVALID_PASSWORD: 'Senha inválida',
+      LINK_EXPIRED: 'Link expirado',
+      LINK_REVOKED: 'Link revogado',
+      LINK_NOT_FOUND: 'Link não encontrado',
+      MAX_VIEWS_REACHED: 'Limite de visualizações atingido'
+    };
+
+    return map[code] ?? code;
+  }
+
+  failureTone(code: string): string {
+    if (code === 'PASSWORD_REQUIRED' || code === 'INVALID_PASSWORD') {
+      return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+    }
+
+    if (code.includes('EXPIRED') || code.includes('REVOKED')) {
+      return 'bg-rose-500/10 text-rose-500 border-rose-500/20';
+    }
+
+    return 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
   }
 
   toSecurityRows(): Array<Array<string | number>> {

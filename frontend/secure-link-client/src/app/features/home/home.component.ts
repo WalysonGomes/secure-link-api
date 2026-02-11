@@ -34,25 +34,27 @@ export class HomeComponent {
 
   readonly openError = signal<ApiError | null>(null);
   readonly openLoading = signal(false);
-  readonly passwordModalOpen = signal(false);
+  readonly openRequiresPassword = signal(false);
   readonly passwordRetryError = signal('');
 
   readonly showCreatePassword = signal(false);
-  readonly showRetryPassword = signal(false);
 
   readonly revokeLoading = signal(false);
   readonly revokeFeedback = signal<{ kind: 'success' | 'error'; message: string } | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     targetUrl: ['', [Validators.pattern(/^https?:\/\/.+/i)]],
-    durationValue: [30, [Validators.min(1), Validators.max(3650)]],
+    durationValue: [null as number | null, [Validators.min(1), Validators.max(3650)]],
     durationUnit: ['minutes' as DurationUnit],
     maxViews: [null as number | null, [Validators.min(1), Validators.max(100)]],
     password: ['']
   });
 
-  readonly helperForm = this.fb.nonNullable.group({ resource: [''] });
-  readonly passwordForm = this.fb.nonNullable.group({ password: ['', [Validators.required]] });
+  readonly helperForm = this.fb.nonNullable.group({
+    resource: [''],
+    password: ['']
+  });
+
   readonly revokeForm = this.fb.nonNullable.group({ shortCode: [''] });
 
   getCreateInputMode(): CreateInputMode {
@@ -70,7 +72,12 @@ export class HomeComponent {
   isSubmitDisabled(): boolean {
     const mode = this.getCreateInputMode();
 
-    return this.isSubmitting() || (mode === 'url' ? this.form.controls.targetUrl.invalid : mode === 'file' ? !this.chosenFile() : true);
+    return this.isSubmitting() ||
+      (mode === 'url'
+        ? this.form.controls.targetUrl.invalid
+        : mode === 'file'
+          ? !this.chosenFile()
+          : true);
   }
 
   setActiveTab(tab: ActiveTab): void {
@@ -101,15 +108,21 @@ export class HomeComponent {
       return;
     }
 
-    const value = digits === '' ? '' : String(Number(digits));
-    input.value = value;
-
-    if (field === 'durationValue') {
-      this.form.controls.durationValue.setValue(value === '' ? 1 : Number(value));
+    if (field === 'durationValue' && digits === '') {
+      this.form.controls.durationValue.setValue(null);
+      input.value = '';
       return;
     }
 
-    this.form.controls.maxViews.setValue(value === '' ? null : Number(value));
+    const value = String(Number(digits));
+    input.value = value;
+
+    if (field === 'durationValue') {
+      this.form.controls.durationValue.setValue(Number(value));
+      return;
+    }
+
+    this.form.controls.maxViews.setValue(Number(value));
   }
 
   onDragOver(event: DragEvent): void {
@@ -196,8 +209,10 @@ export class HomeComponent {
 
   tryOpenSecureLink(): void {
     const shortCode = this.extractShortCode(this.helperForm.controls.resource.value.trim());
+    const password = this.helperForm.controls.password.value.trim() || undefined;
+
     if (!shortCode) {
-      this.openError.set({ status: 400, message: 'Enter a shortCode or /l/{shortCode} URL.' });
+      this.openError.set({ status: 400, message: 'Informe um shortCode ou URL válida /l/{shortCode}.' });
       return;
     }
 
@@ -205,87 +220,44 @@ export class HomeComponent {
     this.openError.set(null);
 
     this.linksApi
-      .openSecureLink(shortCode)
-      .pipe(finalize(() => this.openLoading.set(false)))
-      .subscribe({
-        next: () => this.openInNewTab(this.resolveBackendLinkUrl(shortCode)),
-        error: (error: ApiError) => {
-          if (error.status === 401) {
-            this.passwordRetryError.set('');
-            this.passwordModalOpen.set(true);
-            return;
-          }
-
-          if (error.status === 0) {
-            this.openInNewTab(this.resolveBackendLinkUrl(shortCode));
-            return;
-          }
-
-          this.openError.set(error);
-        }
-      });
-  }
-
-  retryWithPassword(): void {
-    const shortCode = this.extractShortCode(this.helperForm.controls.resource.value.trim());
-    if (!shortCode || !this.passwordForm.valid) {
-      return;
-    }
-
-    this.openLoading.set(true);
-    this.linksApi
-      .openSecureLink(shortCode, this.passwordForm.controls.password.value)
+      .openSecureLink(shortCode, password)
       .pipe(finalize(() => this.openLoading.set(false)))
       .subscribe({
         next: () => {
-          this.passwordModalOpen.set(false);
-          this.passwordForm.reset();
+          this.openRequiresPassword.set(false);
           this.passwordRetryError.set('');
-          this.showRetryPassword.set(false);
+          this.helperForm.controls.password.setValue('');
           this.openInNewTab(this.resolveBackendLinkUrl(shortCode));
         },
         error: (error: ApiError) => {
           if (error.status === 401) {
-            this.passwordRetryError.set('Invalid password. Try again.');
+            this.openRequiresPassword.set(true);
+            this.passwordRetryError.set(
+              password
+                ? 'Senha inválida. Confira e tente novamente.'
+                : 'Este link exige senha. Digite a senha para continuar.'
+            );
             return;
           }
 
           if (error.status === 0) {
-            this.passwordModalOpen.set(false);
+            this.openRequiresPassword.set(false);
+            this.passwordRetryError.set('');
             this.openInNewTab(this.resolveBackendLinkUrl(shortCode));
             return;
           }
 
-          this.passwordModalOpen.set(false);
           this.openError.set(error);
         }
       });
   }
 
-
-  startRevealPassword(field: 'create' | 'retry'): void {
-    if (field === 'create') {
-      this.showCreatePassword.set(true);
-      return;
-    }
-
-    this.showRetryPassword.set(true);
+  startRevealPassword(): void {
+    this.showCreatePassword.set(true);
   }
 
-  stopRevealPassword(field: 'create' | 'retry'): void {
-    if (field === 'create') {
-      this.showCreatePassword.set(false);
-      return;
-    }
-
-    this.showRetryPassword.set(false);
-  }
-
-  closePasswordModal(): void {
-    this.passwordModalOpen.set(false);
-    this.passwordRetryError.set('');
-    this.passwordForm.reset();
-    this.showRetryPassword.set(false);
+  stopRevealPassword(): void {
+    this.showCreatePassword.set(false);
   }
 
   revoke(): void {
@@ -324,7 +296,6 @@ export class HomeComponent {
       });
   }
 
-
   private resolveBackendLinkUrl(shortCode: string): string {
     return new URL(`l/${shortCode}`, this.apiBaseUrl).toString();
   }
@@ -358,7 +329,11 @@ export class HomeComponent {
     }
   }
 
-  private toExpiresAt(durationValue: number, durationUnit: DurationUnit): string {
+  private toExpiresAt(durationValue: number | null, durationUnit: DurationUnit): string | undefined {
+    if (!durationValue || durationValue < 1) {
+      return undefined;
+    }
+
     const multipliers: Record<DurationUnit, number> = {
       seconds: 1000,
       minutes: 60_000,
