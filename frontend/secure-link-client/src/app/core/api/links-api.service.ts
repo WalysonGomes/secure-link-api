@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
@@ -13,6 +13,7 @@ import {
   TopLink
 } from '../../shared/models/api.models';
 import { API_BASE_URL } from '../config/api.config';
+import { SKIP_GLOBAL_ERROR_TOAST } from '../interceptors/request-flags';
 
 @Injectable({
   providedIn: 'root'
@@ -55,6 +56,7 @@ export class LinksApiService {
 
     return this.http.get(`${this.baseUrl}l/${shortCode}`, {
       headers,
+      context: new HttpContext().set(SKIP_GLOBAL_ERROR_TOAST, true),
       observe: 'response',
       responseType: 'blob'
     });

@@ -4,6 +4,7 @@ import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiError } from '../../shared/models/api.models';
 import { ToastService } from '../services/toast.service';
+import { SKIP_GLOBAL_ERROR_TOAST } from './request-flags';
 
 function mapMessage(status: number, backendMessage?: string): string {
   if (backendMessage) {
@@ -36,6 +37,8 @@ function mapMessage(status: number, backendMessage?: string): string {
 export const errorNormalizerInterceptor: HttpInterceptorFn = (req, next) => {
   const toastService = inject(ToastService);
 
+  const skipToast = req.context.get(SKIP_GLOBAL_ERROR_TOAST);
+
   return next(req).pipe(
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse) {
@@ -46,20 +49,24 @@ export const errorNormalizerInterceptor: HttpInterceptorFn = (req, next) => {
           errorId: backend?.errorId ?? error.headers.get('X-Error-Id') ?? undefined
         };
 
-        toastService.show({
-          kind: 'error',
-          title: `Erro HTTP ${apiError.status || 0}`,
-          message: apiError.errorId ? `${apiError.message} (errorId: ${apiError.errorId})` : apiError.message
-        });
+        if (!skipToast) {
+          toastService.show({
+            kind: 'error',
+            title: `Erro HTTP ${apiError.status || 0}`,
+            message: apiError.errorId ? `${apiError.message} (errorId: ${apiError.errorId})` : apiError.message
+          });
+        }
 
         return throwError(() => apiError);
       }
 
-      toastService.show({
-        kind: 'error',
-        title: 'Erro inesperado',
-        message: 'Falha desconhecida no cliente.'
-      });
+      if (!skipToast) {
+        toastService.show({
+          kind: 'error',
+          title: 'Erro inesperado',
+          message: 'Falha desconhecida no cliente.'
+        });
+      }
 
       return throwError(() => ({ status: 0, message: 'Unknown client error.' } as ApiError));
     })

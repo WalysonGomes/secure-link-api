@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { LinksApiService } from '../../core/api/links-api.service';
+import { API_BASE_URL } from '../../core/config/api.config';
 import { ToastService } from '../../core/services/toast.service';
 import { ApiError, LinkResponse } from '../../shared/models/api.models';
 
@@ -20,6 +21,7 @@ export class HomeComponent {
   private readonly fb = inject(FormBuilder);
   private readonly linksApi = inject(LinksApiService);
   private readonly toastService = inject(ToastService);
+  private readonly apiBaseUrl = inject(API_BASE_URL);
 
   readonly durationUnits: DurationUnit[] = ['seconds', 'minutes', 'hours', 'days'];
   readonly activeTab = signal<ActiveTab>('create');
@@ -206,11 +208,16 @@ export class HomeComponent {
       .openSecureLink(shortCode)
       .pipe(finalize(() => this.openLoading.set(false)))
       .subscribe({
-        next: () => window.open(`/l/${shortCode}`, '_blank', 'noopener'),
+        next: () => this.openInNewTab(this.resolveBackendLinkUrl(shortCode)),
         error: (error: ApiError) => {
           if (error.status === 401) {
             this.passwordRetryError.set('');
             this.passwordModalOpen.set(true);
+            return;
+          }
+
+          if (error.status === 0) {
+            this.openInNewTab(this.resolveBackendLinkUrl(shortCode));
             return;
           }
 
@@ -235,11 +242,17 @@ export class HomeComponent {
           this.passwordForm.reset();
           this.passwordRetryError.set('');
           this.showRetryPassword.set(false);
-          window.open(`/l/${shortCode}`, '_blank', 'noopener');
+          this.openInNewTab(this.resolveBackendLinkUrl(shortCode));
         },
         error: (error: ApiError) => {
           if (error.status === 401) {
             this.passwordRetryError.set('Invalid password. Try again.');
+            return;
+          }
+
+          if (error.status === 0) {
+            this.passwordModalOpen.set(false);
+            this.openInNewTab(this.resolveBackendLinkUrl(shortCode));
             return;
           }
 
@@ -309,6 +322,15 @@ export class HomeComponent {
           });
         }
       });
+  }
+
+
+  private resolveBackendLinkUrl(shortCode: string): string {
+    return new URL(`l/${shortCode}`, this.apiBaseUrl).toString();
+  }
+
+  private openInNewTab(url: string): void {
+    window.open(url, '_blank', 'noopener');
   }
 
   private setFile(file: File | null): void {
