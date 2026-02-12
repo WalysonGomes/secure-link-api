@@ -29,30 +29,75 @@ backend (Spring Boot REST API)
         │
         ▼
 MySQL (dev/prod) | H2 (test)
-```
+````
+
+## Demo do Client
+
+A UI foi pensada para um **fluxo único**: o usuário cria link por URL *ou* arquivo sem precisar entender endpoints diferentes.
+Também há **modo claro/escuro**, dashboard analítico e fluxo de revogação.
+
+### Home (Light / Dark)
+
+<p align="center">
+  <img src="./assets/home%20dark.png" alt="Home page (Dark mode)" width="49%" />
+  <img src="./assets/home%20light.png" alt="Home page (Light mode)" width="49%" />
+</p>
+
+### Criação + Resolução (Redirect / Download)
+
+> **Redirect**: cria um link curto que redireciona para uma URL externa.
+> **Download**: cria um link curto para download de um arquivo enviado (upload).
+
+<p align="center">
+  <img src="./assets/redirect%20link.gif" alt="Create + Resolve Redirect Link" width="49%" />
+  <img src="./assets/download%20link.gif" alt="Create + Resolve Download Link" width="49%" />
+</p>
+
+### Revogação
+
+> A revogação invalida o link imediatamente (útil para interromper acesso compartilhado ou encerrar um link antes da expiração).
+
+<p align="center">
+  <img src="./assets/revoke%20link.gif" alt="Revoke Link" width="70%" />
+</p>
+
+### Dashboard (Light / Dark)
+
+O dashboard exibe estatísticas agregadas do backend (`/api/stats/**`) com visualização clara para:
+
+* status dos links (ativos/expirados/revogados)
+* resumo de acessos
+* volume por hora/dia
+* falhas por motivo
+* top links e exceções de segurança (quando disponível)
+
+<p align="center">
+  <img src="./assets/dashboard%20dark.png" alt="Dashboard (Dark mode)" width="49%" />
+  <img src="./assets/dashboard%20light.png" alt="Dashboard (Light mode)" width="49%" />
+</p>
 
 ## Stack
 
 ### Backend
 
-- Java 21+
-- Spring Boot
-- Spring Web / Spring Data JPA
-- Flyway
-- MySQL (dev/prod) / H2 (tests)
-- Micrometer + Actuator + Prometheus
-- BCrypt / NanoID
-- Maven
+* Java 21+
+* Spring Boot
+* Spring Web / Spring Data JPA
+* Flyway
+* MySQL (dev/prod) / H2 (tests)
+* Micrometer + Actuator + Prometheus
+* BCrypt / NanoID
+* Maven
 
 ### Frontend
 
-- Angular (Standalone Components)
-- TypeScript
-- Angular Router / HttpClient
-- Tailwind CSS v3
-- daisyUI
-- Remix Icon
-- Yarn
+* Angular (Standalone Components)
+* TypeScript
+* Angular Router / HttpClient
+* Tailwind CSS v3
+* daisyUI
+* Remix Icon
+* Yarn
 
 ## Estrutura do repositório
 
@@ -68,11 +113,11 @@ MySQL (dev/prod) | H2 (test)
 
 ### Pré-requisitos
 
-- Java 21+
-- Maven 3.9+
-- Node.js 20+
-- Yarn 1.22+
-- MySQL (para backend no perfil `dev`)
+* Java 21+
+* Maven 3.9+
+* Node.js 20+
+* Yarn 1.22+
+* MySQL (para backend no perfil `dev`)
 
 ### 1) Subir backend
 
@@ -161,61 +206,16 @@ GET /api/stats/links/top?limit=5
 GET /api/stats/security/exceptions?limit=5
 ```
 
-## Fluxo de criação e resolução
-
-Abaixo está um resumo visual do fluxo principal do client: criação de links (URL/arquivo), resolução (redirect/download) e revogação.  
-O layout suporta **Light/Dark mode** e foi pensado para um fluxo **único** (o usuário não precisa saber a diferença entre “create” e “upload”).
-
-### Home (Light / Dark)
-
-<p align="center">
-  <img src="./assets/home%20dark.png" alt="Home page (Dark mode)" width="49%" />
-  <img src="./assets/home%20light.png" alt="Home page (Light mode)" width="49%" />
-</p>
-
-### Criação + Resolução (Redirect / Download)
-
-> **Redirect**: cria um link curto que redireciona para uma URL externa.  
-> **Download**: cria um link curto para download de um arquivo enviado (upload).
-
-<p align="center">
-  <img src="./assets/redirect%20link.gif" alt="Create + Resolve Redirect Link" width="49%" />
-  <img src="./assets/download%20link.gif" alt="Create + Resolve Download Link" width="49%" />
-</p>
-
-### Revogação
-
-> A revogação invalida o link imediatamente (útil para interromper acesso compartilhado ou encerrar um link antes da expiração).
-
-<p align="center">
-  <img src="./assets/revoke%20link.gif" alt="Revoke Link" width="70%" />
-</p>
-
-
-## Dashboard do Client
-
-O dashboard exibe estatísticas agregadas do backend (`/api/stats/**`) com visualização clara para:
-- status dos links (ativos/expirados/revogados)
-- resumo de acessos
-- volume por hora/dia
-- falhas por motivo
-- top links e exceções de segurança (quando disponível)
-
-### Dashboard (Light / Dark)
-
-<p align="center">
-  <img src="./assets/dashboard%20dark.png" alt="Dashboard (Dark mode)" width="49%" />
-  <img src="./assets/dashboard%20light.png" alt="Dashboard (Light mode)" width="49%" />
-</p>
-
-
 ## Observabilidade
 
-- `X-Correlation-Id` para rastreabilidade por requisição
-- Tratamento padronizado de erros com `errorId`
-- Métricas técnicas e de negócio via Actuator/Micrometer
+* `X-Correlation-Id` para rastreabilidade por requisição
+* Tratamento padronizado de erros com `errorId`
+* Métricas técnicas e de negócio via Actuator/Micrometer
 
 ## Status
 
-- Projeto fullstack em evolução contínua
-- API e Client integrados localmente
+* Projeto fullstack em evolução contínua
+* API e Client integrados localmente
+
+
+Author: **Walyson Gomes**
