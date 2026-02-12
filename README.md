@@ -7,8 +7,6 @@ Projeto fullstack para criação, distribuição e controle de links seguros.
 
 > Objetivo: permitir compartilhar URLs/arquivos com regras de segurança (senha, expiração, limite de acessos), revogar links e acompanhar métricas via dashboard.
 
----
-
 ## Visão geral
 
 ### Funcionalidades principais
@@ -33,8 +31,6 @@ backend (Spring Boot REST API)
 MySQL (dev/prod) | H2 (test)
 ```
 
----
-
 ## Stack
 
 ### Backend
@@ -58,8 +54,6 @@ MySQL (dev/prod) | H2 (test)
 - Remix Icon
 - Yarn
 
----
-
 ## Estrutura do repositório
 
 ```text
@@ -69,8 +63,6 @@ MySQL (dev/prod) | H2 (test)
 └── frontend
     └── secure-link-client
 ```
-
----
 
 ## Modo de uso (Backend + Frontend)
 
@@ -121,8 +113,6 @@ cd frontend/secure-link-client
 yarn build
 ```
 
----
-
 ## Configuração de API no frontend
 
 O token `API_BASE_URL` usa variável de ambiente em tempo de build (`import.meta.env`):
@@ -132,8 +122,6 @@ O token `API_BASE_URL` usa variável de ambiente em tempo de build (`import.meta
 3. fallback final: `http://localhost:8080/`
 
 Arquivo: `frontend/secure-link-client/src/app/core/config/api.config.ts`.
-
----
 
 ## Endpoints principais
 
@@ -173,34 +161,24 @@ GET /api/stats/links/top?limit=5
 GET /api/stats/security/exceptions?limit=5
 ```
 
----
+## Fluxo de criação e resolução
 
-## Placeholders de mídia (README)
-
-### Fluxo de criação e resolução
-
-- [adicione um gif aqui: upload de arquivo + criação de link]
-- [adicione uma imagem aqui: retorno de sucesso da criação de link]
-- [adicione um gif aqui: tentativa de acesso com senha]
-- [adicione uma imagem aqui: resposta de acesso autorizado]
+- ![Home page Dark mode](./assets/home dark.png)
+- ![Home page Light mode](./assets/home light.png)
+- ![Create Redirect Link](./assets/redirect link.gif)
+- ![Create Download Link](./assets/download link.gif)
+- ![Revoke Link](./assets/revoke link.gif)
 
 ### Dashboard do Client
 
-- [adicione um gif aqui: visão geral do dashboard carregando os cards principais]
-- [adicione uma imagem aqui: tabela de Top Links e Falhas]
-- [adicione uma imagem aqui: gráfico/barras de Volume por hora]
-- [adicione uma imagem aqui: gráfico/barras de Volume por dia]
-- [adicione uma imagem aqui: tabela de Exceções de segurança]
-
----
+- ![Dashoboard Dark Mode](./assets/dashboard dark.png)
+- ![Dashoboard Light Mode](./assets/dashboard light.png)
 
 ## Observabilidade
 
 - `X-Correlation-Id` para rastreabilidade por requisição
 - Tratamento padronizado de erros com `errorId`
 - Métricas técnicas e de negócio via Actuator/Micrometer
-
----
 
 ## Status
 
