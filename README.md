@@ -163,16 +163,52 @@ GET /api/stats/security/exceptions?limit=5
 
 ## Fluxo de criação e resolução
 
-- ![Home page Dark mode](./assets/home dark.png)
-- ![Home page Light mode](./assets/home light.png)
-- ![Create Redirect Link](./assets/redirect link.gif)
-- ![Create Download Link](./assets/download link.gif)
-- ![Revoke Link](./assets/revoke link.gif)
+Abaixo está um resumo visual do fluxo principal do client: criação de links (URL/arquivo), resolução (redirect/download) e revogação.  
+O layout suporta **Light/Dark mode** e foi pensado para um fluxo **único** (o usuário não precisa saber a diferença entre “create” e “upload”).
 
-### Dashboard do Client
+### Home (Light / Dark)
 
-- ![Dashoboard Dark Mode](./assets/dashboard dark.png)
-- ![Dashoboard Light Mode](./assets/dashboard light.png)
+<p align="center">
+  <img src="./assets/home%20dark.png" alt="Home page (Dark mode)" width="49%" />
+  <img src="./assets/home%20light.png" alt="Home page (Light mode)" width="49%" />
+</p>
+
+### Criação + Resolução (Redirect / Download)
+
+> **Redirect**: cria um link curto que redireciona para uma URL externa.  
+> **Download**: cria um link curto para download de um arquivo enviado (upload).
+
+<p align="center">
+  <img src="./assets/redirect%20link.gif" alt="Create + Resolve Redirect Link" width="49%" />
+  <img src="./assets/download%20link.gif" alt="Create + Resolve Download Link" width="49%" />
+</p>
+
+### Revogação
+
+> A revogação invalida o link imediatamente (útil para interromper acesso compartilhado ou encerrar um link antes da expiração).
+
+<p align="center">
+  <img src="./assets/revoke%20link.gif" alt="Revoke Link" width="70%" />
+</p>
+
+---
+
+## Dashboard do Client
+
+O dashboard exibe estatísticas agregadas do backend (`/api/stats/**`) com visualização clara para:
+- status dos links (ativos/expirados/revogados)
+- resumo de acessos
+- volume por hora/dia
+- falhas por motivo
+- top links e exceções de segurança (quando disponível)
+
+### Dashboard (Light / Dark)
+
+<p align="center">
+  <img src="./assets/dashboard%20dark.png" alt="Dashboard (Dark mode)" width="49%" />
+  <img src="./assets/dashboard%20light.png" alt="Dashboard (Light mode)" width="49%" />
+</p>
+
 
 ## Observabilidade
 
