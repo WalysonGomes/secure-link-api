@@ -2,7 +2,8 @@
 
 API backend desenvolvida em **Java + Spring Boot** para criação, gerenciamento e auditoria de links seguros, com controle de expiração, limite de acessos, proteção por senha e métricas de uso.
 
-Este projeto foi desenvolvido com foco em **aprendizado prático avançado**, arquitetura limpa, domínio rico e **observabilidade aplicada ao negócio**, partindo de um MVP e evoluindo para uma **API backend completa e pronta para consumo por um client**.
+> **Versão Full (Backend + Frontend Angular)**: branch **[`full`](https://github.com/WalysonGomes/secure-link-api/tree/full)**  
+> Esta branch `main` contém **somente a API** (v1.0.0-api).
 
 ## Objetivo do Projeto
 
