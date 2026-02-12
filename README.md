@@ -191,7 +191,6 @@ O layout suporta **Light/Dark mode** e foi pensado para um fluxo **único** (o u
   <img src="./assets/revoke%20link.gif" alt="Revoke Link" width="70%" />
 </p>
 
----
 
 ## Dashboard do Client
 
